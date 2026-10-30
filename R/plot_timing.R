@@ -134,7 +134,7 @@ plot_timing <- function(
     
     p <- p +
       ggplot2::facet_grid(
-        reach ~ parameter,
+        parameter ~ reach,
         scales = "free_y"
       )
     
