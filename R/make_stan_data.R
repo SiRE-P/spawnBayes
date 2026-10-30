@@ -45,9 +45,19 @@ make_stan_data <- function(data, priors, outlier_model = TRUE) {
     dplyr::distinct(reach_ind, reach) |>
     dplyr::arrange(reach_ind)
   
-  log_run_lookup <- expand.grid(
-    year_ind = year_lookup$year_ind,
-    reach_ind = reach_lookup$reach_ind
+  log_run_lookup <- do.call(
+    rbind,
+    lapply(
+      reach_lookup$reach_ind,
+      function(r) {
+        
+        data.frame(
+          reach_ind = r,
+          year_ind = year_lookup$year_ind
+        )
+        
+      }
+    )
   ) |>
     dplyr::left_join(
       year_lookup,
@@ -56,10 +66,6 @@ make_stan_data <- function(data, priors, outlier_model = TRUE) {
     dplyr::left_join(
       reach_lookup,
       by = "reach_ind"
-    ) |>
-    dplyr::arrange(
-      year_ind,
-      reach_ind
     )
   
   
