@@ -8,8 +8,8 @@
 #'
 #' @param data Input data frame. Required columns are
 #'   \code{date} and \code{spawner_counts}. Optional columns
-#'   include \code{observer_efficiency}, \code{coverage}, and
-#'   \code{survey_error_group}.
+#'   include \code{reach}, \code{observer_efficiency},
+#'   \code{coverage}, and \code{survey_error_group}.
 #'
 #' @return A validated and standardized data frame.
 #'
@@ -28,8 +28,8 @@
 #' The function also evaluates annual run-timing patterns for
 #' evidence of multiple major peaks. A warning is generated if
 #' potentially multimodal run timing is detected because
-#' spawnBayes assumes a single seasonal peak in spawner
-#' abundance.
+#' spawnBayes assumes a single seasonal peak within each
+#' reach and year.
 #'
 #' @export
 validate_data <- function(data) {
@@ -38,6 +38,27 @@ validate_data <- function(data) {
     stop("data must be a data.frame.", call. = FALSE)
   
   required_cols <- c("date", "spawner_counts")
+  
+  if (!"reach" %in% names(data))
+    data$reach <- "Reach 1"
+  
+  if (any(is.na(data$reach)))
+    stop(
+      "reach contains missing values.",
+      call. = FALSE
+    )
+  
+  data$reach <- trimws(
+    as.character(data$reach)
+  )
+  
+  if (any(data$reach == ""))
+    stop(
+      "reach contains blank values.",
+      call. = FALSE
+    )
+  
+  data$reach <- factor(data$reach)
   
   missing_cols <- setdiff(required_cols, names(data))
   
@@ -96,29 +117,25 @@ validate_data <- function(data) {
   
   year_counts <- data |>
     dplyr::mutate(year = lubridate::year(date)) |>
-    dplyr::count(year)
+    dplyr::count(year, reach)
   
   if (any(year_counts$n < 3))
-    warning("Some years contain fewer than three surveys.", call. = FALSE)
+    warning("Some reach-years contain fewer than three surveys.", call. = FALSE)
   
   if (length(unique(lubridate::year(data$date))) < 2)
     warning("Only one year of data supplied. Data-derived priors may be unreliable.", call. = FALSE)
   
-  if ("stream" %in% names(data) && all(is.na(data$stream)))
-    warning("stream column contains only missing values.", call. = FALSE)
-  
-  if ("stream" %in% names(data)) {
-    
-    dup <- any(duplicated(data[c("stream", "date")]))
-    
-  } else {
-    
-    dup <- any(duplicated(data["date"]))
-    
-  }
+  dup <- any(
+    duplicated(
+      data[c("reach", "date")]
+    )
+  )
   
   if (dup)
-    warning("Duplicate survey dates detected.", call. = FALSE)
+    warning(
+      "Duplicate survey dates detected within one or more reaches.",
+      call. = FALSE
+    )
   
   if (!"observer_efficiency" %in% names(data))
     data$observer_efficiency <- 1
@@ -254,9 +271,8 @@ validate_data <- function(data) {
       paste0(
         "Potential multimodal run timing detected in ",
         n_multimodal,
-        " of ",
-        nrow(year_modes),
-        " years. spawnBayes assumes a single run peak."
+        " reach-years. spawnBayes assumes a single run peak ",
+        "within each reach and year."
       ),
       call. = FALSE
     )

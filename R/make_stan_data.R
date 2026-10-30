@@ -14,66 +14,156 @@
 #'   \item{stan_data}{Data list supplied to Stan.}
 #'   \item{day_stand}{Reference day used for day standardization.}
 #'   \item{year_lookup}{Mapping between Stan year indices and calendar years.}
+#'   \item{reach_lookup}{Mapping between Stan reach indices and reach names.}
 #' }
 #'
 #' @keywords internal
 make_stan_data <- function(data, priors, outlier_model = TRUE) {
   
-  if ("stream" %in% names(data))
-    stop("Multi-stream fitting is not yet implemented.", call. = FALSE)
-  
   dat <- data |>
-    dplyr::mutate(year = lubridate::year(date),
-                  yday = lubridate::yday(date)) |>
+    dplyr::mutate(
+      year = lubridate::year(date),
+      yday = lubridate::yday(date)
+    ) |>
     dplyr::arrange(date)
   
   day_stand <- min(dat$yday)
   
   dat <- dat |>
-    dplyr::mutate(year_ind = as.numeric(factor(year)),
-                  day = yday - day_stand)
+    dplyr::mutate(
+      year_ind = as.integer(factor(year)),
+      reach_ind = as.integer(factor(reach)),
+      day = yday - day_stand
+    )
   
   year_lookup <- dat |>
     dplyr::distinct(year_ind, year) |>
     dplyr::arrange(year_ind)
   
-  stan_priors <- data.frame(
-    prior = c("log_runs_mu", "arrival_mu", "arrival_sigma",
-              "spread", "spread_sigma", "residence",
-              "count_dispersion"),
-    v1 = c(log(priors$abundance$mean),
-           priors$arrival_peak$mean - day_stand,
-           priors$arrival_sigma$mean,
-           priors$spread$mean,
-           priors$spread_sigma$mean,
-           priors$residence$mean,
-           priors$count_dispersion$mean),
-    v2 = c(priors$abundance$sdlog,
-           priors$arrival_peak$sd,
-           priors$arrival_sigma$sd,
-           priors$spread$sd,
-           priors$spread_sigma$sd,
-           priors$residence$sd,
-           priors$count_dispersion$sd)
-  )
+  reach_lookup <- dat |>
+    dplyr::distinct(reach_ind, reach) |>
+    dplyr::arrange(reach_ind)
+  
+  abundance_prior_mean <-
+    priors$abundance$mean[
+      match(
+        reach_lookup$reach,
+        priors$abundance$reach
+      )
+    ]
+  
+  abundance_prior_sdlog <-
+    priors$abundance$sdlog[
+      match(
+        reach_lookup$reach,
+        priors$abundance$reach
+      )
+    ]
+  
+  if (any(is.na(abundance_prior_mean)))
+    stop(
+      "Failed to match abundance prior means to reaches.",
+      call. = FALSE
+    )
+  
+  if (any(is.na(abundance_prior_sdlog)))
+    stop(
+      "Failed to match abundance prior standard deviations to reaches.",
+      call. = FALSE
+    )
   
   stan_data <- list(
-    n_priors = nrow(stan_priors),
-    priors = data.matrix(stan_priors[, -1]),
+    
+    # dimensions
     n_years = nrow(year_lookup),
-    year = dat$year_ind,
-    day = dat$day,
+    n_reaches = nrow(reach_lookup),
     n_obs = nrow(dat),
-    live_counts = dat$spawner_counts,
-    survey_error_group_id = as.integer(dat$survey_error_group),
-    n_survey_error_groups = nlevels(dat$survey_error_group),
-    outlier_model = as.integer(outlier_model)
+    
+    # observations
+    year = dat$year_ind,
+    reach = dat$reach_ind,
+    day = dat$day,
+    live_counts = as.integer(round(dat$spawner_counts)),
+    
+    # survey error groups
+    n_survey_error_groups =
+      nlevels(dat$survey_error_group),
+    
+    survey_error_group_id =
+      as.integer(dat$survey_error_group),
+    
+    # model options
+    outlier_model =
+      as.integer(outlier_model),
+    
+    # abundance priors
+    abundance_prior_mean =
+      abundance_prior_mean,
+    
+    abundance_prior_sdlog =
+      abundance_prior_sdlog,
+    
+    # arrival timing prior
+    arrival_prior_mean =
+      priors$arrival_peak$mean - day_stand,
+    
+    arrival_prior_sd =
+      priors$arrival_peak$sd,
+    
+    # timing spread prior
+    spread_prior_mean =
+      priors$spread$mean,
+    
+    spread_prior_sd =
+      priors$spread$sd,
+    
+    # exit lag prior
+    exit_lag_prior_mean =
+      priors$exit_lag$mean,
+    
+    exit_lag_prior_sd =
+      priors$exit_lag$sd,
+    
+    # arrival-date variability prior
+    arrival_sigma_prior_mean =
+      priors$arrival_sigma$mean,
+    
+    arrival_sigma_prior_sd =
+      priors$arrival_sigma$sd,
+    
+    # arrival-spread variability prior
+    arrival_spread_sigma_prior_mean =
+      priors$spread_sigma$mean,
+    
+    arrival_spread_sigma_prior_sd =
+      priors$spread_sigma$sd,
+    
+    # exit-lag variability prior
+    exit_lag_sigma_prior_mean =
+      priors$spread_sigma$mean,
+    
+    exit_lag_sigma_prior_sd =
+      priors$spread_sigma$sd,
+    
+    # exit-spread variability prior
+    exit_spread_sigma_prior_mean =
+      priors$spread_sigma$mean,
+    
+    exit_spread_sigma_prior_sd =
+      priors$spread_sigma$sd,
+    
+    # observation-error prior
+    count_dispersion_prior_mean =
+      priors$count_dispersion$mean,
+    
+    count_dispersion_prior_sd =
+      priors$count_dispersion$sd
   )
   
   list(
     stan_data = stan_data,
     day_stand = day_stand,
-    year_lookup = year_lookup
+    year_lookup = year_lookup,
+    reach_lookup = reach_lookup
   )
-  
 }
