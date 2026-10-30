@@ -15,6 +15,7 @@
 #'   \item{day_stand}{Reference day used for day standardization.}
 #'   \item{year_lookup}{Mapping between Stan year indices and calendar years.}
 #'   \item{reach_lookup}{Mapping between Stan reach indices and reach names.}
+#'   \item{log_run_lookup}{Mapping between Stan log_run indices and year-reach combinations.}
 #' }
 #'
 #' @keywords internal
@@ -31,8 +32,8 @@ make_stan_data <- function(data, priors, outlier_model = TRUE) {
   
   dat <- dat |>
     dplyr::mutate(
-      year_ind = as.integer(factor(year)),
-      reach_ind = as.integer(factor(reach)),
+      year_ind = as.integer(factor(year, levels = sort(unique(year)))),
+      reach_ind = as.integer(factor(reach, levels = sort(unique(reach)))),
       day = yday - day_stand
     )
   
@@ -43,6 +44,24 @@ make_stan_data <- function(data, priors, outlier_model = TRUE) {
   reach_lookup <- dat |>
     dplyr::distinct(reach_ind, reach) |>
     dplyr::arrange(reach_ind)
+  
+  log_run_lookup <- expand.grid(
+    year_ind = year_lookup$year_ind,
+    reach_ind = reach_lookup$reach_ind
+  ) |>
+    dplyr::left_join(
+      year_lookup,
+      by = "year_ind"
+    ) |>
+    dplyr::left_join(
+      reach_lookup,
+      by = "reach_ind"
+    ) |>
+    dplyr::arrange(
+      year_ind,
+      reach_ind
+    )
+  
   
   abundance_prior_mean <-
     priors$abundance$mean[
@@ -164,6 +183,7 @@ make_stan_data <- function(data, priors, outlier_model = TRUE) {
     stan_data = stan_data,
     day_stand = day_stand,
     year_lookup = year_lookup,
-    reach_lookup = reach_lookup
+    reach_lookup = reach_lookup,
+    log_run_lookup = log_run_lookup
   )
 }

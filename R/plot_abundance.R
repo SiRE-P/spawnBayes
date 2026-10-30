@@ -73,6 +73,16 @@ plot_abundance <- function(fit, CI = c(66, 95)) {
     
   }
   
+  if (dplyr::n_distinct(abund$reach) > 1) {
+    
+    p <- p +
+      ggplot2::facet_wrap(
+        ~ reach,
+        scales = "free_y"
+      )
+    
+  }
+  
   p
   
 }

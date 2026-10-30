@@ -81,6 +81,11 @@ transformed parameters{
   array[n_years] vector[4] year_timing;
   array[n_years, n_reaches] vector[4] timing;
   
+  matrix[n_years, n_reaches] arrival;
+  matrix[n_years, n_reaches] arrival_spread;
+  matrix[n_years, n_reaches] exit_lag;
+  matrix[n_years, n_reaches] exit_spread;
+  
   matrix[4,4] L_Sigma_year = diag_pre_multiply(timing_sigma_year, L_Omega_year);
   matrix[4,4] L_Sigma_reach = diag_pre_multiply(timing_sigma_reach, L_Omega_reach);
   
@@ -90,26 +95,28 @@ transformed parameters{
     year_timing[y] = timing_mu + L_Sigma_year * (year_timing_raw[y]');
     for (r in 1:n_reaches) {
       timing[y,r] = year_timing[y] +  L_Sigma_reach * timing_dev_raw[y,r];
+      arrival[y,r] = timing[y,r][1];
+      arrival_spread[y,r] = exp(timing[y,r][2]) + 1;
+      exit_lag[y,r] = exp(timing[y,r][3]) + 1;
+      exit_spread[y,r] =  exp(timing[y,r][4]) + 1;
     }
   }
   
   //process model
   for (i in 1:n_obs) {
+  real mean_arrival = arrival[year[i], reach[i]];
+  real arrival_spread_i = arrival_spread[year[i], reach[i]];
+  real exit_lag_i = exit_lag[year[i], reach[i]];
+  real exit_spread_i = exit_spread[year[i], reach[i]];
     
-    vector[4] t = timing[year[i], reach[i]];
-    
-    real mean_arrival = t[1];
-    real arrival_spread = exp(t[2]) + 1;
-    real exit_lag = exp(t[3]) + 1;
-    real exit_spread = exp(t[4]) + 1;
-    
-    real entered = normal_cdf(day[i] | mean_arrival, arrival_spread);
-    real exited = normal_cdf(day[i] | mean_arrival + exit_lag, exit_spread);
+    real entered = normal_cdf(day[i] | mean_arrival, arrival_spread_i);
+    real exited = normal_cdf(day[i] | mean_arrival + exit_lag_i, exit_spread_i);
     real log_p = log(fmin(fmax(entered * (1 - exited), 1e-5), 1.0));
     real log_mu =log_run[year[i], reach[i]] + log_p;
     
     live_mu[i] = exp(log_mu);
   }
+  
 }
 
 model {
