@@ -7,7 +7,7 @@
 #' observations are coloured by reach.
 #'
 #' Surveys with posterior outlier probabilities exceeding
-#' 0.25 are shown as open circles.
+#' `outlier_p_thresh` are shown as open circles.
 #'
 #' Corrected survey counts used to fit the model are shown as
 #' points. If observer-efficiency or coverage corrections
@@ -17,12 +17,21 @@
 #' @param fit A fitted spawnBayes model.
 #' @param CI Numeric vector of credible interval widths to plot.
 #'   Multiple intervals may be supplied (e.g., `c(66, 95)`).
+#' @param outlier_p_thresh Probability threshold used to
+#'   classify surveys as potential outliers.
+#' @param y_scale Scale used for the y-axis. One of
+#'   `"none"` or `"log10"`.
 #'
 #' @return A ggplot object showing fitted run curves and
 #' observed survey counts by year.
 #'
 #' @export
-plot_run_curve <- function(fit, CI = c(66, 95)) {
+plot_run_curve <- function(
+    fit,
+    CI = c(66, 95),
+    outlier_p_thresh = 0.25,
+    y_scale = c("none", "log10")
+) {
   
   if (!inherits(fit, "spawnBayes_fit"))
     stop(
@@ -41,6 +50,8 @@ plot_run_curve <- function(fit, CI = c(66, 95)) {
       "All CI values must be between 0 and 100.",
       call. = FALSE
     )
+  
+  y_scale <- match.arg(y_scale)
   
   CI <- sort(unique(CI), decreasing = TRUE)
   
@@ -177,7 +188,7 @@ plot_run_curve <- function(fit, CI = c(66, 95)) {
     }
   
   obs$outlier_flag <-
-    obs$p_is_outlier > 0.25
+    obs$p_is_outlier > outlier_p_thresh
   
   show_uncorrected <-
     "spawner_counts_uncorrected" %in% names(obs) &&
@@ -268,7 +279,7 @@ plot_run_curve <- function(fit, CI = c(66, 95)) {
     
   }
   
-  p +
+  p <- p +
     ggplot2::facet_wrap(
       ~year,
       scales = "free_y"
@@ -279,13 +290,31 @@ plot_run_curve <- function(fit, CI = c(66, 95)) {
         ggplot2::element_blank(),
       panel.grid.minor =
         ggplot2::element_blank()
-    ) +
-    ggplot2::scale_y_continuous(
-      labels = scales::label_number(
-        scale_cut = scales::cut_short_scale()
-      ),
-      name = "Spawners present"
-    ) +
+    )
+  
+  if (y_scale == "none") {
+    
+    p <- p +
+      ggplot2::scale_y_continuous(
+        labels = scales::label_number(
+          scale_cut = scales::cut_short_scale()
+        ),
+        name = "Spawners present"
+      )
+    
+  } else {
+    
+    p <- p +
+      ggplot2::scale_y_log10(
+        labels = scales::label_number(
+          scale_cut = scales::cut_short_scale()
+        ),
+        name = "Spawners present"
+      )
+    
+  }
+  
+  p +
     ggplot2::scale_x_continuous(
       labels = function(x)
         format(
