@@ -4,36 +4,67 @@
 identify_multimodal_years <- function(data) {
   
   data |>
-    dplyr::mutate(year = lubridate::year(date)) |>
-    dplyr::group_by(reach, year) |>
+    dplyr::mutate(
+      year = lubridate::year(date)
+    ) |>
+    dplyr::group_by(
+      reach,
+      year
+    ) |>
     dplyr::group_modify(~{
       
-      if (nrow(.x) < 5)
+      xday <- lubridate::yday(.x$date)
+      
+      # Need enough unique survey dates to fit a spline
+      if (length(unique(xday)) < 4) {
+        
         return(
           data.frame(
             n_major_peaks = 1
           )
         )
+        
+      }
       
-      sm <- stats::smooth.spline(
-        lubridate::yday(.x$date),
-        .x$spawner_counts
+      sm <- try(
+        stats::smooth.spline(
+          xday,
+          .x$spawner_counts
+        ),
+        silent = TRUE
+      )
+      
+      # If spline fitting fails, assume unimodal
+      if (inherits(sm, "try-error")) {
+        
+        return(
+          data.frame(
+            n_major_peaks = 1
+          )
+        )
+        
+      }
+      
+      pred_days <- seq(
+        min(xday),
+        max(xday),
+        by = 1
       )
       
       pred <- predict(
         sm,
-        seq(
-          min(lubridate::yday(.x$date)),
-          max(lubridate::yday(.x$date)),
-          by = 1
-        )
+        pred_days
       )$y
       
       peak_ind <- which(
         diff(sign(diff(pred))) < 0
       ) + 1
       
-      if (length(peak_ind) > 1) {
+      if (length(peak_ind) <= 1) {
+        
+        n_major_peaks <- 1
+        
+      } else {
         
         peak_heights <- pred[peak_ind]
         
@@ -42,28 +73,26 @@ identify_multimodal_years <- function(data) {
             0.5 * max(peak_heights)
         ]
         
-        peak_days <- seq(
-          min(lubridate::yday(.x$date)),
-          max(lubridate::yday(.x$date)),
-          by = 1
-        )[major_peaks]
+        peak_days <- pred_days[
+          major_peaks
+        ]
         
-        n_major_peaks <- 1
-        
-        if (length(peak_days) > 1) {
+        if (length(peak_days) <= 1) {
+          
+          n_major_peaks <- 1
+          
+        } else {
           
           peak_sep <- diff(
             sort(peak_days)
           )
           
           n_major_peaks <-
-            1 + sum(peak_sep >= 10)
+            1 + sum(
+              peak_sep >= 10
+            )
           
         }
-        
-      } else {
-        
-        n_major_peaks <- 1
         
       }
       
@@ -76,6 +105,9 @@ identify_multimodal_years <- function(data) {
     dplyr::mutate(
       multimodal = n_major_peaks > 1
     ) |>
-    dplyr::arrange(reach, year)
+    dplyr::arrange(
+      reach,
+      year
+    )
   
 }
