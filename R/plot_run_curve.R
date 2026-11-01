@@ -9,10 +9,7 @@
 #' Surveys with posterior outlier probabilities exceeding
 #' `outlier_p_thresh` are shown as open circles.
 #'
-#' Corrected survey counts used to fit the model are shown as
-#' points. If observer-efficiency or coverage corrections
-#' were applied, the original uncorrected survey counts are
-#' shown as open circles with grey outlines.
+#' Survey counts used by the model are shown as points.
 #'
 #' @param fit A fitted spawnBayes model.
 #' @param CI Numeric vector of credible interval widths to plot.
@@ -190,13 +187,6 @@ plot_run_curve <- function(
   obs$outlier_flag <-
     obs$p_is_outlier > outlier_p_thresh
   
-  show_uncorrected <-
-    "spawner_counts_uncorrected" %in% names(obs) &&
-    any(
-      obs$spawner_counts_uncorrected !=
-        obs$spawner_counts
-    )
-  
   p <- ggplot2::ggplot(
     spawn_curves,
     ggplot2::aes(
@@ -254,32 +244,7 @@ plot_run_curve <- function(
         `TRUE` = "Potential outlier"
       ),
       name = NULL
-    )
-  
-  if (show_uncorrected) {
-    
-    p <- p +
-      ggplot2::geom_point(
-        data = obs,
-        ggplot2::aes(
-          x = day,
-          y = spawner_counts_uncorrected
-        ),
-        inherit.aes = FALSE,
-        shape = 1,
-        colour = "grey40",
-        size = 2
-      ) +
-      ggplot2::labs(
-        caption = paste(
-          "Grey open circles show uncorrected survey counts.",
-          "Coloured points show counts after observer-efficiency and coverage corrections."
-        )
-      )
-    
-  }
-  
-  p <- p +
+    ) +
     ggplot2::facet_wrap(
       ~year,
       scales = "free_y"
