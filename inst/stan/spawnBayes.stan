@@ -50,21 +50,25 @@ data {
 }
 
 parameters {
-  
   // grand mean timing parameters
   vector[4] timing_mu;
   
-  // among-year timing variation
-  matrix[n_years, 4] year_timing_raw;
+  // persistent reach effects
+  array[n_reaches] vector[4] reach_effect_raw;
+  
+  cholesky_factor_corr[4] L_Omega_reach;
+  vector<lower=0>[4] timing_sigma_reach;
+  
+  // annual timing effects
+  matrix[n_years, 4] year_effect_raw;
   
   cholesky_factor_corr[4] L_Omega_year;
   vector<lower=0>[4] timing_sigma_year;
   
-  // reach-specific deviations within year
-  array[n_years, n_reaches] vector[4] timing_dev_raw;
+  // reach-year timing deviations
+  array[n_years, n_reaches] vector[4] reach_year_dev_raw;
   
-  cholesky_factor_corr[4] L_Omega_reach;
-  vector<lower=0>[4] timing_sigma_reach;
+  vector<lower=0>[4] timing_sigma_reach_year;
   
   // abundance
   matrix[n_years, n_reaches] log_run;
@@ -78,23 +82,36 @@ parameters {
 }
 
 transformed parameters{
-  array[n_years] vector[4] year_timing;
   array[n_years, n_reaches] vector[4] timing;
+  
+  array[n_reaches] vector[4] reach_effect;
+  array[n_years] vector[4] year_effect;
   
   matrix[n_years, n_reaches] arrival;
   matrix[n_years, n_reaches] arrival_spread;
   matrix[n_years, n_reaches] exit_lag;
   matrix[n_years, n_reaches] exit_spread;
   
-  matrix[4,4] L_Sigma_year = diag_pre_multiply(timing_sigma_year, L_Omega_year);
   matrix[4,4] L_Sigma_reach = diag_pre_multiply(timing_sigma_reach, L_Omega_reach);
+  matrix[4,4] L_Sigma_year = diag_pre_multiply(timing_sigma_year, L_Omega_year);
   
   vector[n_obs] live_mu;
   
+  for (r in 1:n_reaches) {
+    reach_effect[r] =  L_Sigma_reach * reach_effect_raw[r];
+  }
+  
+  for(y in 1:n_years){
+    year_effect[y] = L_Sigma_year * (year_effect_raw[y]');
+  }
+  
   for (y in 1:n_years) {
-    year_timing[y] = timing_mu + L_Sigma_year * (year_timing_raw[y]');
     for (r in 1:n_reaches) {
-      timing[y,r] = year_timing[y] +  L_Sigma_reach * timing_dev_raw[y,r];
+      timing[y,r] = timing_mu + 
+      reach_effect[r] + 
+      year_effect[y] +  
+      timing_sigma_reach_year .* reach_year_dev_raw[y,r];
+      
       arrival[y,r] = timing[y,r][1];
       arrival_spread[y,r] = exp(timing[y,r][2]) + 1;
       exit_lag[y,r] = exp(timing[y,r][3]) + 1;
@@ -104,10 +121,10 @@ transformed parameters{
   
   //process model
   for (i in 1:n_obs) {
-  real mean_arrival = arrival[year[i], reach[i]];
-  real arrival_spread_i = arrival_spread[year[i], reach[i]];
-  real exit_lag_i = exit_lag[year[i], reach[i]];
-  real exit_spread_i = exit_spread[year[i], reach[i]];
+    real mean_arrival = arrival[year[i], reach[i]];
+    real arrival_spread_i = arrival_spread[year[i], reach[i]];
+    real exit_lag_i = exit_lag[year[i], reach[i]];
+    real exit_spread_i = exit_spread[year[i], reach[i]];
     
     real entered = normal_cdf(day[i] | mean_arrival, arrival_spread_i);
     real exited = normal_cdf(day[i] | mean_arrival + exit_lag_i, exit_spread_i);
@@ -125,25 +142,35 @@ model {
   timing_mu[3] ~ normal(exit_lag_prior_mean, exit_lag_prior_sd);
   timing_mu[4] ~ normal(spread_prior_mean, spread_prior_sd);
   
-  timing_sigma_year[1] ~ lognormal(log(arrival_sigma_prior_mean), arrival_sigma_prior_sd);
-  timing_sigma_year[2] ~ lognormal(log(arrival_spread_sigma_prior_mean), arrival_spread_sigma_prior_sd);
-  timing_sigma_year[3] ~ lognormal(log(exit_lag_sigma_prior_mean), exit_lag_sigma_prior_sd);
-  timing_sigma_year[4] ~ lognormal(log(exit_spread_sigma_prior_mean), exit_spread_sigma_prior_sd);
-  
   timing_sigma_reach[1] ~ lognormal(log(arrival_sigma_prior_mean), arrival_sigma_prior_sd);
   timing_sigma_reach[2] ~ lognormal(log(arrival_spread_sigma_prior_mean), arrival_spread_sigma_prior_sd);
   timing_sigma_reach[3] ~ lognormal(log(exit_lag_sigma_prior_mean), exit_lag_sigma_prior_sd);
   timing_sigma_reach[4] ~ lognormal(log(exit_spread_sigma_prior_mean), exit_spread_sigma_prior_sd);
   
+  
+  
+  timing_sigma_year[1] ~ lognormal(log(arrival_sigma_prior_mean), arrival_sigma_prior_sd);
+  timing_sigma_year[2] ~ lognormal(log(arrival_spread_sigma_prior_mean), arrival_spread_sigma_prior_sd);
+  timing_sigma_year[3] ~ lognormal(log(exit_lag_sigma_prior_mean), exit_lag_sigma_prior_sd);
+  timing_sigma_year[4] ~ lognormal(log(exit_spread_sigma_prior_mean), exit_spread_sigma_prior_sd);
+  
+  timing_sigma_reach_year[1] ~ lognormal(log(arrival_sigma_prior_mean), arrival_sigma_prior_sd);
+  timing_sigma_reach_year[2] ~  lognormal(log(arrival_spread_sigma_prior_mean), arrival_spread_sigma_prior_sd);
+  timing_sigma_reach_year[3] ~ lognormal(log(exit_lag_sigma_prior_mean), exit_lag_sigma_prior_sd);
+  timing_sigma_reach_year[4] ~ lognormal(log(exit_spread_sigma_prior_mean), exit_spread_sigma_prior_sd);
+  
   L_Omega_reach ~ lkj_corr_cholesky(2);
-  
-  
   L_Omega_year ~ lkj_corr_cholesky(2);
   
-  to_vector(year_timing_raw) ~ std_normal();
-  for (y in 1:n_years){
-    for (r in 1:n_reaches){
-      timing_dev_raw[y,r] ~ std_normal();
+  to_vector(year_effect_raw) ~ std_normal();
+  
+  for (r in 1:n_reaches) {
+    reach_effect_raw[r] ~ std_normal();
+  }
+  
+  for (y in 1:n_years) {
+    for (r in 1:n_reaches) {
+      reach_year_dev_raw[y,r] ~ std_normal();
     }
   }
   
