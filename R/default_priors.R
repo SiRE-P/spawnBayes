@@ -15,9 +15,9 @@
 #'
 #' @param data A data frame containing survey observations.
 #' @param abundance Expected spawner abundance. May be a
-#'   single value applied to all reaches or a named vector
-#'   containing separate values for each reach. If NULL,
-#'   reach-specific values are estimated from the observed
+#'   single value applied to all groups or a named vector
+#'   containing separate values for each group. If NULL,
+#'   group-specific values are estimated from the observed
 #'   survey counts.
 #'
 #' @param arrival_peak Expected peak arrival date. If NULL,
@@ -45,7 +45,7 @@ default_priors <- function(data, abundance = NULL, assumed_residence = NULL, arr
   
   annual_peaks <- data |>
     dplyr::mutate(year = lubridate::year(date)) |>
-    dplyr::group_by(reach, year) |>
+    dplyr::group_by(group, year) |>
     dplyr::summarise(
       peak_count = max(spawner_counts, na.rm = TRUE),
       .groups = "drop"
@@ -65,7 +65,7 @@ default_priors <- function(data, abundance = NULL, assumed_residence = NULL, arr
   spread_guess <- max(median(survey_spans$survey_span, na.rm = TRUE) / 6, 2)
   
   abundance_priors <- annual_peaks |>
-    dplyr::group_by(reach) |>
+    dplyr::group_by(group) |>
     dplyr::summarise(
       mean =  stats::median(peak_count * 1.5, na.rm = TRUE),
       sdlog =  max(stats::sd(log(pmax(peak_count * 1.5, 1)), na.rm = TRUE ), 0.5),
@@ -76,16 +76,16 @@ default_priors <- function(data, abundance = NULL, assumed_residence = NULL, arr
     
     if (!is.null(names(abundance))) {
       
-      missing_reaches <- setdiff(
-        abundance_priors$reach,
+      missing_groups <- setdiff(
+        abundance_priors$group,
         names(abundance)
       )
       
-      if (length(missing_reaches) > 0)
+      if (length(missing_groups) > 0)
         stop(
           paste0(
-            "Missing abundance values for reach(es): ",
-            paste(missing_reaches, collapse = ", ")
+            "Missing abundance values for group(s): ",
+            paste(missing_groups, collapse = ", ")
           ),
           call. = FALSE
         )
@@ -93,7 +93,7 @@ default_priors <- function(data, abundance = NULL, assumed_residence = NULL, arr
       abundance_priors$mean <-
         abundance[
           match(
-            abundance_priors$reach,
+            abundance_priors$group,
             names(abundance)
           )
         ]
@@ -106,7 +106,7 @@ default_priors <- function(data, abundance = NULL, assumed_residence = NULL, arr
       
       if (length(abundance) != nrow(abundance_priors))
         stop(
-          "abundance must be length 1 or match the number of reaches.",
+          "abundance must be length 1 or match the number of groups.",
           call. = FALSE
         )
       
@@ -132,7 +132,7 @@ default_priors <- function(data, abundance = NULL, assumed_residence = NULL, arr
   
   list(
     abundance = list(
-      reach = abundance_priors$reach,
+      group = abundance_priors$group,
       mean = abundance_priors$mean,
       sdlog = abundance_priors$sdlog
     ),

@@ -130,11 +130,11 @@ plot_timing <- function(
       y = NULL
     )
   
-  if (dplyr::n_distinct(dat$reach) > 1) {
+  if (dplyr::n_distinct(dat$group) > 1) {
     
     p <- p +
       ggplot2::facet_grid(
-        parameter ~ reach,
+        parameter ~ group,
         scales = "free_y"
       )
     

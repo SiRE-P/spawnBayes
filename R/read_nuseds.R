@@ -72,8 +72,8 @@ read_nuseds <- function(
         stream =
           as.character(Stream),
         
-        # spawnBayes currently expects a reach column
-        reach =
+        # spawnBayes currently expects a group column
+        group =
           as.character(Stream),
         
         spawner_counts =
@@ -115,7 +115,7 @@ read_nuseds <- function(
         stream =
           as.character(Stream),
         
-        reach =
+        group =
           as.character(`Segment Name`),
         
         spawner_counts =

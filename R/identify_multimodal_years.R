@@ -1,4 +1,4 @@
-#' Identify reach-years with potentially multimodal run timing
+#' Identify group-years with potentially multimodal run timing
 #'
 #' @keywords internal
 identify_multimodal_years <- function(data) {
@@ -8,7 +8,7 @@ identify_multimodal_years <- function(data) {
       year = lubridate::year(date)
     ) |>
     dplyr::group_by(
-      reach,
+      group,
       year
     ) |>
     dplyr::group_modify(~{
@@ -106,7 +106,7 @@ identify_multimodal_years <- function(data) {
       multimodal = n_major_peaks > 1
     ) |>
     dplyr::arrange(
-      reach,
+      group,
       year
     )
   

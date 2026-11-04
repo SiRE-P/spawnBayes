@@ -5,17 +5,17 @@
 #' The input data must contain a `date` column and a
 #' `spawner_counts` column.
 #'
-#' Optional `reach`, `observer_efficiency`, `coverage`, and
+#' Optional `group`, `observer_efficiency`, `coverage`, and
 #' `survey_error_group` columns may also be supplied.
 #' If omitted, observer efficiency and coverage are
 #' assumed to equal 1 and all observations are assigned
 #' to a common survey-error group.
 #' 
-#'  When a reach column is supplied, spawnBayes fits
-#' a hierarchical multi-reach timing model in which
-#' timing information is shared among reaches within
+#'  When a group column is supplied (i.e., for different streams, reaches, populations), spawnBayes fits
+#' a hierarchical multi-group timing model in which
+#' timing information is shared among groups within
 #' years while abundance is estimated separately for
-#' each reach.
+#' each group.
 #'
 #' When a `survey_error_group` column is provided,
 #' spawnBayes estimates separate observation-dispersion
@@ -33,11 +33,11 @@
 #'
 #' @param data A data frame containing survey observations.
 #'   Required columns are `date` and `spawner_counts`.
-#'   Optional columns include `reach`, `observer_efficiency`,
+#'   Optional columns include `group`, `observer_efficiency`,
 #'   `coverage`, and `survey_error_group`.
 #' @param abundance Prior estimate of spawner abundance.
-#'   For multi-reach analyses this may be supplied separately
-#'   for each reach. If NULL, default values are estimated
+#'   For multi-group analyses this may be supplied separately
+#'   for each group. If NULL, default values are estimated
 #'   from the observed counts.
 #' @param assumed_residence Assumed mean residence time (days), also known as survey life.
 #'   If supplied, this value is used to construct the residence-time
@@ -133,7 +133,7 @@ fit_spawner <- function(
     
     data <- data |>
       mutate(year = lubridate::year(date)) |>
-      group_by(year, reach) |>
+      group_by(year, group) |>
       arrange(date, .by_group = TRUE) |>
       filter(trim_repeated_zeros(spawner_counts)) |>
       dplyr::ungroup() |>

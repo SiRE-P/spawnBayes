@@ -1,13 +1,13 @@
 #' Extract timing estimates
 #'
-#' Extract annual reach-specific timing estimates from a fitted
+#' Extract annual group-specific timing estimates from a fitted
 #' spawnBayes model.
 #'
 #' @param fit A fitted spawnBayes model.
 #' @param CI Credible interval widths to report.
 #' @param format Either `"yday"` or `"date"`.
 #'
-#' @return A named list containing reach-specific annual timing
+#' @return A named list containing group-specific annual timing
 #' estimates for:
 #' \describe{
 #'   \item{arrival_peak}{Peak arrival timing}
@@ -34,7 +34,7 @@ timing <- function(
   
   lookup <- fit$stan_inputs$log_run_lookup |>
     dplyr::select(
-      reach,
+      group,
       year
     )
   
@@ -144,7 +144,7 @@ timing <- function(
     
     cols <- setdiff(
       names(out$arrival_peak),
-      c("reach", "year")
+      c("group", "year")
     )
     
     for (col in cols) {

@@ -1,6 +1,6 @@
 #' Extract abundance estimates
 #'
-#' Extract annual reach-specific spawner abundance estimates
+#' Extract annual group-specific spawner abundance estimates
 #' from a fitted spawnBayes model.
 #'
 #' @param fit A fitted spawnBayes model.
@@ -9,7 +9,7 @@
 #'   classify surveys as potential outliers when reporting
 #'   annual outlier counts.
 #'
-#' @return A data frame containing reach-specific annual
+#' @return A data frame containing group-specific annual
 #' abundance estimates. Output includes posterior median
 #' abundance estimates and credible intervals. When an
 #' assumed residence time was supplied during model fitting,
@@ -18,10 +18,10 @@
 #' the posterior median and TAUC estimate are also reported.
 #'
 #' The output additionally includes a logical `multimodal`
-#' flag identifying reach-years with evidence of multiple
+#' flag identifying group-years with evidence of multiple
 #' major run-timing peaks and, when an outlier observation
 #' model was fitted, the number of surveys within each
-#' reach-year having posterior outlier probabilities
+#' group-year having posterior outlier probabilities
 #' exceeding `outlier_p_thresh`.
 #'
 #' @export
@@ -48,7 +48,7 @@ abundance <- function(
     draws = abundance_draws,
     lookup = fit$stan_inputs$log_run_lookup |>
       dplyr::select(
-        reach,
+        group,
         year
       ),
     CI = CI
@@ -58,12 +58,12 @@ abundance <- function(
     out,
     fit$multimodal_years |>
       dplyr::select(
-        reach,
+        group,
         year,
         multimodal
       ),
     by = c(
-      "reach",
+      "group",
       "year"
     )
   )
@@ -77,12 +77,12 @@ abundance <- function(
     
     outlier_years <-
       data.frame(
-        reach = fit$data$reach,
+        group = fit$data$group,
         year = lubridate::year(fit$data$date),
         p_is_outlier = outlier_prob$mean
       ) |>
       dplyr::group_by(
-        reach,
+        group,
         year
       ) |>
       dplyr::summarise(
@@ -98,7 +98,7 @@ abundance <- function(
         out,
         outlier_years,
         by = c(
-          "reach",
+          "group",
           "year"
         )
       )
@@ -115,7 +115,7 @@ abundance <- function(
       out,
       fit$TAUC,
       by = c(
-        "reach",
+        "group",
         "year"
       )
     )
@@ -133,7 +133,7 @@ abundance <- function(
   
   out <- out |>
     dplyr::select(
-      reach,
+      group,
       year,
       median,
       dplyr::starts_with("lwr"),
@@ -148,7 +148,7 @@ abundance <- function(
       n_outliers
     ) |>
     dplyr::arrange(
-      reach,
+      group,
       year
     )
   

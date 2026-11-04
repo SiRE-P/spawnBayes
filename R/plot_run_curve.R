@@ -1,15 +1,18 @@
 #' Plot fitted run curves
 #'
 #' Plot posterior estimates of spawners present through time
-#' against observed survey counts for each year.
+#' against survey observations for each year.
 #'
-#' When multiple reaches are present, fitted curves and
-#' observations are coloured by reach.
+#' When multiple groups are present, fitted curves and
+#' observations are coloured by group.
 #'
 #' Surveys with posterior outlier probabilities exceeding
 #' `outlier_p_thresh` are shown as open circles.
 #'
-#' Survey counts used by the model are shown as points.
+#' Survey observations are plotted after deterministic
+#' correction for observer efficiency and survey coverage
+#' to facilitate comparison with the estimated number of
+#' spawners present.
 #'
 #' @param fit A fitted spawnBayes model.
 #' @param CI Numeric vector of credible interval widths to plot.
@@ -18,16 +21,25 @@
 #'   classify surveys as potential outliers.
 #' @param y_scale Scale used for the y-axis. One of
 #'   `"none"` or `"log10"`.
+#' @param facet Plot layout. One of:
+#'   \describe{
+#'     \item{"year"}{One panel per year with groups overlaid.}
+#'     \item{"group_year"}{Separate panels for each group-year combination.}
+#'   }
+#' @param groups Optional character vector specifying a subset
+#'   of groups to include in the plot.
 #'
 #' @return A ggplot object showing fitted run curves and
-#' observed survey counts by year.
+#' corrected survey counts.
 #'
 #' @export
 plot_run_curve <- function(
     fit,
     CI = c(66, 95),
     outlier_p_thresh = 0.25,
-    y_scale = c("none", "log10")
+    y_scale = c("none", "log10"),
+    facet = c("year", "group_year"),
+    groups = NULL
 ) {
   
   if (!inherits(fit, "spawnBayes_fit"))
@@ -49,6 +61,7 @@ plot_run_curve <- function(
     )
   
   y_scale <- match.arg(y_scale)
+  facet <- match.arg(facet)
   
   CI <- sort(unique(CI), decreasing = TRUE)
   
@@ -126,7 +139,7 @@ plot_run_curve <- function(
     )
     
     curve_dat <- data.frame(
-      reach = lookup$reach[j],
+      group = lookup$group[j],
       year = lookup$year[j],
       day = (-5:max_day) + day_stand,
       fish = apply(
@@ -169,8 +182,40 @@ plot_run_curve <- function(
   obs <- fit$data |>
     dplyr::mutate(
       year = lubridate::year(date),
-      day = lubridate::yday(date)
+      day = lubridate::yday(date),
+      spawner_counts =
+        spawner_counts /
+        observer_efficiency /
+        coverage
     )
+  
+  if (!is.null(groups)) {
+    
+    missing_groups <- setdiff(
+      groups,
+      unique(obs$group)
+    )
+    
+    if (length(missing_groups) > 0)
+      stop(
+        paste(
+          "Unknown group(s):",
+          paste(missing_groups, collapse = ", ")
+        ),
+        call. = FALSE
+      )
+    
+    spawn_curves <- spawn_curves |>
+      dplyr::filter(
+        group %in% groups
+      )
+    
+    obs <- obs |>
+      dplyr::filter(
+        group %in% groups
+      )
+    
+  }
   
   outlier_prob <- try(
     fit$fit$summary("p_is_outlier"),
@@ -192,8 +237,8 @@ plot_run_curve <- function(
     ggplot2::aes(
       x = day,
       y = fish,
-      colour = reach,
-      fill = reach
+      colour = group,
+      fill = group
     )
   )
   
@@ -228,7 +273,7 @@ plot_run_curve <- function(
       ggplot2::aes(
         x = day,
         y = spawner_counts,
-        colour = reach,
+        colour = group,
         shape = outlier_flag
       ),
       inherit.aes = FALSE,
@@ -244,11 +289,31 @@ plot_run_curve <- function(
         `TRUE` = "Potential outlier"
       ),
       name = NULL
-    ) +
-    ggplot2::facet_wrap(
-      ~year,
-      scales = "free_y"
-    ) +
+    )
+  
+  if (facet == "year") {
+    
+    p <- p +
+      ggplot2::facet_wrap(
+        ~year,
+        scales = "free_y"
+      )
+    
+  } else {
+    
+    p <- p +
+      ggplot2::facet_grid(
+        group ~ year,
+        scales = "free_y"
+      ) +
+      ggplot2::guides(
+        colour = "none",
+        fill = "none"
+      )
+    
+  }
+  
+  p <- p +
     ggplot2::theme_bw() +
     ggplot2::theme(
       strip.background =
@@ -279,16 +344,34 @@ plot_run_curve <- function(
     
   }
   
+  month_starts <- seq(
+    from = as.Date(
+      format(
+        min(as.Date(spawn_curves$day,
+                    origin = "2023-12-31")),
+        "%Y-%m-01"
+      )
+    ),
+    to = as.Date(
+      format(
+        max(as.Date(spawn_curves$day,
+                    origin = "2023-12-31")),
+        "%Y-%m-01"
+      )
+    ),
+    by = "month"
+  )
+  
   p +
     ggplot2::scale_x_continuous(
-      labels = function(x)
-        format(
-          as.Date(
-            x,
-            origin = "2023-12-31"
-          ),
-          "%b"
-        ),
+      breaks = as.numeric(
+        month_starts -
+          as.Date("2023-12-31")
+      ),
+      labels = format(
+        month_starts,
+        "%b"
+      ),
       name = NULL
     )
   

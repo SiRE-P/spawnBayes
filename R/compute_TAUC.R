@@ -1,6 +1,6 @@
 #' Compute traditional TAUC abundance estimates
 #'
-#' Calculate reach-specific annual abundance estimates using the
+#' Calculate group-specific annual abundance estimates using the
 #' traditional trapezoidal area-under-the-curve (TAUC) method and
 #' an assumed mean residence time (survey life).
 #'
@@ -11,7 +11,7 @@
 #' @param data A data frame containing survey observations.
 #' @param assumed_residence Assumed mean residence time (days).
 #'
-#' @return A data frame containing reach-specific annual TAUC
+#' @return A data frame containing group-specific annual TAUC
 #' abundance estimates.
 #'
 #' @keywords internal
@@ -24,7 +24,7 @@ compute_TAUC <- function(data, assumed_residence) {
     dplyr::mutate(
       year = lubridate::year(date)
     ) |>
-    dplyr::group_by(reach, year) |>
+    dplyr::group_by(group, year) |>
     dplyr::arrange(date, .by_group = TRUE) |>
     dplyr::mutate(
       tdiff = as.numeric(date - dplyr::lag(date)),
@@ -45,5 +45,5 @@ compute_TAUC <- function(data, assumed_residence) {
       ),
       .groups = "drop"
     ) |>
-    dplyr::arrange(reach, year)
+    dplyr::arrange(group, year)
 }

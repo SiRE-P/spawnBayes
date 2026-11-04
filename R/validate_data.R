@@ -8,7 +8,7 @@
 #'
 #' @param data Input data frame. Required columns are
 #'   \code{date} and \code{spawner_counts}. Optional columns
-#'   include \code{reach}, \code{observer_efficiency},
+#'   include \code{group}, \code{observer_efficiency},
 #'   \code{coverage}, and \code{survey_error_group}.
 #'
 #' @return A validated and standardized data frame.
@@ -29,7 +29,7 @@
 #' evidence of multiple major peaks. A warning is generated if
 #' potentially multimodal run timing is detected because
 #' spawnBayes assumes a single seasonal peak within each
-#' reach and year.
+#' group and year.
 #'
 #' @export
 validate_data <- function(data) {
@@ -39,26 +39,26 @@ validate_data <- function(data) {
   
   required_cols <- c("date", "spawner_counts")
   
-  if (!"reach" %in% names(data))
-    data$reach <- "Reach 1"
+  if (!"group" %in% names(data))
+    data$group <- "group 1"
   
-  if (any(is.na(data$reach)))
+  if (any(is.na(data$group)))
     stop(
-      "reach contains missing values.",
+      "group contains missing values.",
       call. = FALSE
     )
   
-  data$reach <- trimws(
-    as.character(data$reach)
+  data$group <- trimws(
+    as.character(data$group)
   )
   
-  if (any(data$reach == ""))
+  if (any(data$group == ""))
     stop(
-      "reach contains blank values.",
+      "group contains blank values.",
       call. = FALSE
     )
   
-  data$reach <- factor(data$reach)
+  data$group <- factor(data$group)
   
   missing_cols <- setdiff(required_cols, names(data))
   
@@ -117,23 +117,23 @@ validate_data <- function(data) {
   
   year_counts <- data |>
     dplyr::mutate(year = lubridate::year(date)) |>
-    dplyr::count(year, reach)
+    dplyr::count(year, group)
   
   if (any(year_counts$n < 3))
-    warning("Some reach-years contain fewer than three surveys.", call. = FALSE)
+    warning("Some group-years contain fewer than three surveys.", call. = FALSE)
   
   if (length(unique(lubridate::year(data$date))) < 2)
     warning("Only one year of data supplied. Data-derived priors may be unreliable.", call. = FALSE)
   
   dup <- any(
     duplicated(
-      data[c("reach", "date")]
+      data[c("group", "date")]
     )
   )
   
   if (dup)
     warning(
-      "Duplicate survey dates detected within one or more reaches.",
+      "Duplicate survey dates detected within one or more groups.",
       call. = FALSE
     )
   
@@ -271,8 +271,8 @@ validate_data <- function(data) {
       paste0(
         "Potential multimodal run timing detected in ",
         n_multimodal,
-        " reach-years. spawnBayes assumes a single run peak ",
-        "within each reach and year."
+        " group-years. spawnBayes assumes a single run peak ",
+        "within each group and year."
       ),
       call. = FALSE
     )

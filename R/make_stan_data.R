@@ -14,8 +14,8 @@
 #'   \item{stan_data}{Data list supplied to Stan.}
 #'   \item{day_stand}{Reference day used for day standardization.}
 #'   \item{year_lookup}{Mapping between Stan year indices and calendar years.}
-#'   \item{reach_lookup}{Mapping between Stan reach indices and reach names.}
-#'   \item{log_run_lookup}{Mapping between Stan log_run indices and year-reach combinations.}
+#'   \item{group_lookup}{Mapping between Stan group indices and group names.}
+#'   \item{log_run_lookup}{Mapping between Stan log_run indices and year-group combinations.}
 #' }
 #'
 #' @keywords internal
@@ -33,7 +33,7 @@ make_stan_data <- function(data, priors, outlier_model = TRUE) {
   dat <- dat |>
     dplyr::mutate(
       year_ind = as.integer(factor(year, levels = sort(unique(year)))),
-      reach_ind = as.integer(factor(reach, levels = sort(unique(reach)))),
+      group_ind = as.integer(factor(group, levels = sort(unique(group)))),
       day = yday - day_stand
     )
   
@@ -41,18 +41,18 @@ make_stan_data <- function(data, priors, outlier_model = TRUE) {
     dplyr::distinct(year_ind, year) |>
     dplyr::arrange(year_ind)
   
-  reach_lookup <- dat |>
-    dplyr::distinct(reach_ind, reach) |>
-    dplyr::arrange(reach_ind)
+  group_lookup <- dat |>
+    dplyr::distinct(group_ind, group) |>
+    dplyr::arrange(group_ind)
   
   log_run_lookup <- do.call(
     rbind,
     lapply(
-      reach_lookup$reach_ind,
+      group_lookup$group_ind,
       function(r) {
         
         data.frame(
-          reach_ind = r,
+          group_ind = r,
           year_ind = year_lookup$year_ind
         )
         
@@ -64,36 +64,36 @@ make_stan_data <- function(data, priors, outlier_model = TRUE) {
       by = "year_ind"
     ) |>
     dplyr::left_join(
-      reach_lookup,
-      by = "reach_ind"
+      group_lookup,
+      by = "group_ind"
     )
   
   
   abundance_prior_mean <-
     priors$abundance$mean[
       match(
-        reach_lookup$reach,
-        priors$abundance$reach
+        group_lookup$group,
+        priors$abundance$group
       )
     ]
   
   abundance_prior_sdlog <-
     priors$abundance$sdlog[
       match(
-        reach_lookup$reach,
-        priors$abundance$reach
+        group_lookup$group,
+        priors$abundance$group
       )
     ]
   
   if (any(is.na(abundance_prior_mean)))
     stop(
-      "Failed to match abundance prior means to reaches.",
+      "Failed to match abundance prior means to groups.",
       call. = FALSE
     )
   
   if (any(is.na(abundance_prior_sdlog)))
     stop(
-      "Failed to match abundance prior standard deviations to reaches.",
+      "Failed to match abundance prior standard deviations to groups.",
       call. = FALSE
     )
   
@@ -101,12 +101,12 @@ make_stan_data <- function(data, priors, outlier_model = TRUE) {
     
     # dimensions
     n_years = nrow(year_lookup),
-    n_reaches = nrow(reach_lookup),
+    n_groups = nrow(group_lookup),
     n_obs = nrow(dat),
     
     # observations
     year = dat$year_ind,
-    reach = dat$reach_ind,
+    group = dat$group_ind,
     day = dat$day,
     live_counts = as.integer(round(dat$spawner_counts)),
     
@@ -189,7 +189,7 @@ make_stan_data <- function(data, priors, outlier_model = TRUE) {
     stan_data = stan_data,
     day_stand = day_stand,
     year_lookup = year_lookup,
-    reach_lookup = reach_lookup,
+    group_lookup = group_lookup,
     log_run_lookup = log_run_lookup
   )
 }

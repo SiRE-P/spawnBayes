@@ -4,11 +4,11 @@
 #'
 #' This function is intended as a quick quality-control step
 #' before fitting a spawnBayes model. Survey counts are plotted
-#' through time and coloured by reach.
+#' through time and coloured by group.
 #'
-#' Inspection-level imports typically produce one reach per
-#' stream, while segment-level imports typically produce one
-#' reach per NuSEDS segment.
+#' Inspection-level imports produce one group per
+#' stream, while segment-level imports produce one
+#' group per NuSEDS segment.
 #'
 #' @param data A data frame produced by [read_nuseds()].
 #' @param y_scale Scale used for the y-axis. One of
@@ -26,7 +26,7 @@ plot_nuseds <- function(
   
   required_cols <- c(
     "date",
-    "reach",
+    "group",
     "spawner_counts"
   )
   
@@ -55,8 +55,8 @@ plot_nuseds <- function(
     ggplot2::aes(
       x = day,
       y = spawner_counts,
-      colour = reach,
-      group = interaction(reach, year)
+      colour = group,
+      group = interaction(group, year)
     )
   ) +
     ggplot2::geom_line(
@@ -80,7 +80,7 @@ plot_nuseds <- function(
     ggplot2::labs(
       x = NULL,
       y = "Spawner count",
-      colour = "Reach"
+      colour = "group"
     )
   
   if (y_scale == "none") {
