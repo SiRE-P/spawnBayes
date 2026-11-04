@@ -14,8 +14,17 @@ timing(fit, CI = c(66, 95), format = c("yday", "date"))
 \item{format}{Either \code{"yday"} or \code{"date"}.}
 }
 \value{
-A named list containing timing estimates.
+A named list containing group-specific annual timing
+estimates for:
+\describe{
+\item{arrival_peak}{Peak arrival timing}
+\item{arrival_spread}{Arrival spread}
+\item{effective_residence}{Effective residence time}
+\item{exit_lag}{Exit lag}
+\item{exit_spread}{Exit spread}
+}
 }
 \description{
-Extract annual timing estimates from a fitted spawnBayes model.
+Extract annual group-specific timing estimates from a fitted
+spawnBayes model.
 }

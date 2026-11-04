@@ -12,20 +12,13 @@ compute_TAUC(data, assumed_residence)
 \item{assumed_residence}{Assumed mean residence time (days).}
 }
 \value{
-A \code{spawnBayes_fit} object containing:
-\describe{
-\item{fit}{CmdStanMCMC model fit.}
-\item{data}{Input data used for fitting.}
-\item{priors}{Prior specification used by the model.}
-\item{stan_inputs}{Stan data supplied to the model.}
-\item{assumed_residence}{User-supplied residence time assumption, if provided.}
-\item{TAUC}{Traditional TAUC abundance estimates, if calculated.}
-}
+A data frame containing group-specific annual TAUC
+abundance estimates.
 }
 \description{
-Calculate annual abundance estimates using the traditional
-trapezoidal area-under-the-curve (TAUC) method and an assumed
-mean residence time (survey life).
+Calculate group-specific annual abundance estimates using the
+traditional trapezoidal area-under-the-curve (TAUC) method and
+an assumed mean residence time (survey life).
 }
 \details{
 The calculation follows the historical TAUC implementation
