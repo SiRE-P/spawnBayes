@@ -1,9 +1,12 @@
 # spawnBayes <img src="man/figures/logo.png" align="right" height="160"/></a>
 
 `spawnBayes` estimates salmon spawner abundance and run timing from repeated
-live-count surveys. Unlike traditional area-under-the-curve approaches,
-`spawnBayes` estimates abundance, run timing, and their associated
-uncertainty while allowing residence time to vary among years.
+live-count surveys.Unlike traditional area-under-the-curve (TAUC) approaches,
+`spawnBayes` jointly estimates abundance, run timing, effective
+residence time, and associated uncertainty using a hierarchical
+Bayesian model.
+
+The package supports analyses of individual streams as well as integrated analyses across multiple groups. Groups may represent reaches, streams, rivers, populations, index areas, or other biologically meaningful assessment units. In multi-group analyses, timing information is shared among groups while abundance is estimated separately for each group.
 
 The package is designed to support salmon stock assessment and escapement
 monitoring programs. Users provide survey dates and spawner counts and
@@ -63,10 +66,42 @@ Optional columns:
 
 | Variable | Description |
 |-----------|-------------|
+| `group` | Group identifier (reach, stream, river, population, index area, etc.) |
 | `observer_efficiency` | Proportion of fish detected during a survey (0-1) |
 | `coverage` | Proportion of spawning habitat surveyed (0-1) |
+| `survey_error_group` | Observation-error category used to estimate group-specific observation dispersion |
+
+If `group` is omitted, all observations are assumed to belong to a single
+group.
 
 If `observer_efficiency` or `coverage` are omitted, values of 1 are assumed.
+
+If `survey_error_group` is omitted, all observations are assumed to share a
+common observation-error distribution.
+
+## What Is a Group?
+
+A group is the unit for which abundance is estimated and timing is allowed
+to vary independently.
+
+Groups may represent:
+
+- stream reaches
+- streams
+- rivers
+- populations
+- index areas
+- other biologically meaningful assessment units
+
+Single-group analyses estimate abundance for one group. Multi-group analyses
+share timing information among groups while estimating abundance separately
+for each group.
+
+In general, groups should be analysed together when they are expected to
+share broad seasonal timing patterns and survey information from one group
+may help inform timing estimates in another.
+
+Groups may be analysed separately or jointly. When in doubt, fitting both a single-group and multi-group model can help assess whether shared timing information improves inference.
 
 ## Quick Example
 
@@ -95,12 +130,23 @@ Estimate run timing:
 timing(fit)
 ```
 
-## Worked Example
+## Articles
 
-A complete worked example using Clemens Creek Sockeye salmon data is
-available in the documentation:
+### Single-Group Analysis
 
-[Clemens Creek Sockeye Example](https://sire-p.github.io/spawnBayes/articles/clemens-creek-sockeye.html)
+A complete introduction to fitting and interpreting spawnBayes models for a
+single group.
+
+### Multi-Group Analysis
+
+A worked example showing how timing information can be shared among streams,
+reaches, rivers, populations, or other assessment units while estimating
+group-specific abundance.
+
+### Working With NuSEDS Data
+
+A step-by-step workflow demonstrating how to import, process, and analyse
+NuSEDS survey exports using spawnBayes.
 
 ## Data Template
 
