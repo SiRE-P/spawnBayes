@@ -1,8 +1,8 @@
 # Compute traditional TAUC abundance estimates
 
-Calculate annual abundance estimates using the traditional trapezoidal
-area-under-the-curve (TAUC) method and an assumed mean residence time
-(survey life).
+Calculate group-specific annual abundance estimates using the
+traditional trapezoidal area-under-the-curve (TAUC) method and an
+assumed mean residence time (survey life).
 
 ## Usage
 
@@ -22,31 +22,7 @@ compute_TAUC(data, assumed_residence)
 
 ## Value
 
-A `spawnBayes_fit` object containing:
-
-- fit:
-
-  CmdStanMCMC model fit.
-
-- data:
-
-  Input data used for fitting.
-
-- priors:
-
-  Prior specification used by the model.
-
-- stan_inputs:
-
-  Stan data supplied to the model.
-
-- assumed_residence:
-
-  User-supplied residence time assumption, if provided.
-
-- TAUC:
-
-  Traditional TAUC abundance estimates, if calculated.
+A data frame containing group-specific annual TAUC abundance estimates.
 
 ## Details
 

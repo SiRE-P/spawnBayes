@@ -22,8 +22,10 @@ default_priors(
 
 - abundance:
 
-  Expected total spawner abundance. If NULL, a default value is
-  estimated from the observed counts.
+  Expected spawner abundance. May be a single value applied to all
+  groups or a named vector containing separate values for each group. If
+  NULL, group-specific values are estimated from the observed survey
+  counts.
 
 - assumed_residence:
 

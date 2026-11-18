@@ -18,7 +18,9 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/clemens-creek-sockeye.html">Getting Started with spawnBayes: A Clemens Creek Sockeye Example</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with spawnBayes: A Single-Population Analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/importing-nuseds.html">Importing NuSEDS Data into spawnBayes</a></li>
+    <li><a class="dropdown-item" href="../articles/multi-population.html">Multi-Population Analyses in spawnBayes</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -59,8 +61,11 @@
 
 
 <dt id="arg-abundance">abundance<a class="anchor" aria-label="anchor" href="#arg-abundance"></a></dt>
-<dd><p>Expected total spawner abundance. If NULL,
-a default value is estimated from the observed counts.</p></dd>
+<dd><p>Expected spawner abundance. May be a
+single value applied to all groups or a named vector
+containing separate values for each group. If NULL,
+group-specific values are estimated from the observed
+survey counts.</p></dd>
 
 
 <dt id="arg-assumed-residence">assumed_residence<a class="anchor" aria-label="anchor" href="#arg-assumed-residence"></a></dt>

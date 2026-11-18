@@ -1,4 +1,4 @@
-# Getting Started with spawnBayes: A Clemens Creek Sockeye Example
+# Getting Started with spawnBayes: A Single-Population Analysis
 
 ``` r
 library(spawnBayes)
@@ -30,9 +30,21 @@ observation-dispersion parameters to be estimated for different survey
 types or quality classes, and an optional robust observation model that
 reduces the influence of anomalous survey counts.
 
-This vignette demonstrates a complete analysis using sockeye salmon
-survey data from Clemens Creek, BC, Canada. These data were provided by
-Diana McHugh, South Coast Stock Assessment, Fisheries and Oceans Canada.
+This vignette demonstrates a complete analysis using Chinook salmon
+survey data from the Artlish River, British Columbia. The Artlish River
+data are drawn from the example dataset `nvi_chinook`, which is included
+with spawnBayes.
+
+Although only a single group is analysed in this vignette, spawnBayes
+also supports analyses involving multiple groups. See [Multi-Population
+Analyses in
+spawnBayes](https://sire-p.github.io/spawnBayes/articles/multi-population.md)
+for an example based on the same dataset. A group is the unit for which
+abundance and run timing are estimated independently. Depending on the
+application, groups may represent reaches, streams, rivers, populations,
+index areas, or other biologically meaningful assessment units.
+
+Multi-group analyses are covered in a separate vignette.
 
 ## Workflow
 
@@ -48,26 +60,42 @@ A typical spawnBayes analysis consists of:
 
 Load in the example dataset and inspect it. The model requires a date
 column and a spawner_counts column. Optional observer_efficiency,
-coverage, and survey_error_group columns can be supplied. Observation
-efficiency and coverage are used to adjust observed counts, while
-survey_error_group allows separate observation-dispersion parameters to
-be estimated for different survey types or quality classes.
+coverage, and survey_error_group columns can be supplied. Observer
+efficiency and coverage are used to account for imperfect detection when
+relating observed survey counts to the estimated number of spawners
+present. The survey_error_group column allows separate
+observation-dispersion parameters to be estimated for different survey
+types or quality classes.
 
-In this case, dates are provided as character strings, and observer
-efficiency and coverage have been provided as percentages. These will be
-converted into the proper format in the data validation step.
+In this example, survey dates have already been converted to Date format
+and correction factors have been supplied as proportions. The validation
+step checks data integrity, standardizes optional fields, and identifies
+potential issues such as sparse sampling or evidence of multiple run
+peaks.
 
 ``` r
-data(clemens_sockeye)
+data("nvi_chinook")
 
-summary(clemens_sockeye)
-#>      date           spawner_counts    observer_efficiency   coverage        
-#>  Length:140         Min.   :    0.0   Length:140          Length:140        
-#>  Class :character   1st Qu.:  370.8   Class :character    Class :character  
-#>  Mode  :character   Median : 1040.0   Mode  :character    Mode  :character  
-#>                     Mean   : 2740.3                                         
-#>                     3rd Qu.: 3367.8                                         
-#>                     Max.   :29651.0
+artlish <- nvi_chinook |>
+  dplyr::filter(
+    group == "ARTLISH RIVER"
+  )
+
+summary(artlish)
+#>       date               stream             group           spawner_counts  
+#>  Min.   :2007-09-20   Length:98          Length:98          Min.   :  1.00  
+#>  1st Qu.:2013-09-12   Class :character   Class :character   1st Qu.: 10.00  
+#>  Median :2016-10-02   Mode  :character   Mode  :character   Median : 70.50  
+#>  Mean   :2017-01-05                                         Mean   : 98.79  
+#>  3rd Qu.:2020-06-24                                         3rd Qu.:121.00  
+#>  Max.   :2025-10-28                                         Max.   :863.00  
+#>  observer_efficiency survey_error_group
+#>  Min.   :0.433       Length:98         
+#>  1st Qu.:0.900       Class :character  
+#>  Median :0.951       Mode  :character  
+#>  Mean   :0.927                         
+#>  3rd Qu.:1.000                         
+#>  Max.   :1.000
 ```
 
 ## Validate data
@@ -80,23 +108,23 @@ factors are supplied or if some years show potential evidence of
 multiple run peaks.
 
 ``` r
-clemens_sockeye <- validate_data(clemens_sockeye)
+artlish <- validate_data(artlish)
 
-summary(clemens_sockeye)
-#>       date            spawner_counts    observer_efficiency    coverage     
-#>  Min.   :2008-09-24   Min.   :    0.0   Min.   :0.3538      Min.   :0.5000  
-#>  1st Qu.:2014-10-21   1st Qu.:  370.8   1st Qu.:0.7963      1st Qu.:0.8000  
-#>  Median :2017-10-28   Median : 1040.0   Median :0.8899      Median :0.9000  
-#>  Mean   :2018-01-09   Mean   : 2740.3   Mean   :0.8512      Mean   :0.8772  
-#>  3rd Qu.:2021-09-29   3rd Qu.: 3367.8   3rd Qu.:0.9570      3rd Qu.:1.0000  
-#>  Max.   :2024-11-15   Max.   :29651.0   Max.   :1.0000      Max.   :1.0000  
-#>  survey_error_group
-#>  default:140       
-#>                    
-#>                    
-#>                    
-#>                    
-#> 
+summary(artlish)
+#>       date               stream                    group    spawner_counts  
+#>  Min.   :2007-09-20   Length:98          ARTLISH RIVER:98   Min.   :  1.00  
+#>  1st Qu.:2013-09-12   Class :character                      1st Qu.: 10.00  
+#>  Median :2016-10-02   Mode  :character                      Median : 70.50  
+#>  Mean   :2017-01-05                                         Mean   : 98.79  
+#>  3rd Qu.:2020-06-24                                         3rd Qu.:121.00  
+#>  Max.   :2025-10-28                                         Max.   :863.00  
+#>  observer_efficiency survey_error_group    coverage
+#>  Min.   :0.433       HIGH   :74         Min.   :1  
+#>  1st Qu.:0.900       LOW    : 2         1st Qu.:1  
+#>  Median :0.951       MED    : 9         Median :1  
+#>  Mean   :0.927       UNKNOWN:13         Mean   :1  
+#>  3rd Qu.:1.000                          3rd Qu.:1  
+#>  Max.   :1.000                          Max.   :1
 ```
 
 ## Survey observations
@@ -104,7 +132,7 @@ summary(clemens_sockeye)
 Now plot the raw survey counts by date in each year.
 
 ``` r
-ggplot(clemens_sockeye |> mutate(year = year(date), day = yday(date)),
+ggplot(artlish |> mutate(year = year(date), day = yday(date)),
   aes(x = day, y = spawner_counts, fill = observer_efficiency))+
   geom_point(pch = 21, size = 2) +
   facet_wrap(~year, scales = "free_y")+
@@ -130,13 +158,14 @@ ggplot(clemens_sockeye |> mutate(year = year(date), day = yday(date)),
   scale_fill_viridis_c(option = "G", direction = -1)
 ```
 
-![](clemens-creek-sockeye_files/figure-html/plot-data-1.png)
+![](getting-started_files/figure-html/plot-data-1.png)
 
 ## Fit the model
 
 spawnBayes estimates annual run timing and abundance jointly across
-years. Information is shared among years through a hierarchical model,
-improving estimation in years with sparse survey data.
+years. In this single-group example, information is shared among years
+through a hierarchical model, improving estimation in years with sparse
+survey data.
 
 By default, spawnBayes fits a robust observation model that allows a
 small proportion of surveys to arise from a higher-variance observation
@@ -150,16 +179,16 @@ diagnostic output and increase the number of iterations when
 recommended. Even so, the model may require several minutes to fit.
 
 ``` r
-fit <- fit_spawner(clemens_sockeye, iter_warmup = 500, iter_sampling = 500, assumed_residence = 15.5, adapt_delta = 0.99, refresh = 0)
+fit <- fit_spawner(artlish, iter_warmup = 500, iter_sampling = 500, assumed_residence = 15.5, adapt_delta = 0.99, refresh = 0)
 #> Running MCMC with 4 parallel chains...
-#> Chain 2 finished in 92.5 seconds.
-#> Chain 1 finished in 101.2 seconds.
-#> Chain 3 finished in 102.0 seconds.
-#> Chain 4 finished in 102.3 seconds.
+#> Chain 1 finished in 92.7 seconds.
+#> Chain 3 finished in 93.4 seconds.
+#> Chain 2 finished in 93.9 seconds.
+#> Chain 4 finished in 112.8 seconds.
 #> 
 #> All 4 chains finished successfully.
-#> Mean chain execution time: 99.5 seconds.
-#> Total execution time: 102.7 seconds.
+#> Mean chain execution time: 98.2 seconds.
+#> Total execution time: 113.2 seconds.
 ```
 
 ## Model diagnostics
@@ -171,10 +200,10 @@ model convergence.
 
 ``` r
 diagnostics(fit)
-#>   converged    quality divergences treedepth_hits max_rhat min_ess_bulk
-#> 1      TRUE acceptable           0              0    1.009          318
-#>   min_ess_tail      recommendation
-#> 1          721 No action required.
+#>   converged quality divergences treedepth_hits max_rhat min_ess_bulk
+#> 1      TRUE    good           0            111    1.009          434
+#>   min_ess_tail                     recommendation
+#> 1          878 Consider increasing max_treedepth.
 ```
 
 In this example, all diagnostic checks were acceptable. No divergent
@@ -210,23 +239,25 @@ prior assumptions are reasonable.
 prior_post_plot(fit)
 ```
 
-![](clemens-creek-sockeye_files/figure-html/prior-post-1.png)
+![](getting-started_files/figure-html/prior-post-1.png)
 
 ## Estimated run
 
 The fitted curves represent the estimated number of spawners present
 through time. Shaded regions show the 66 and 95% credible intervals.
 Observed survey counts are shown as points. When the outlier model is
-enabled, point colour indicates the posterior probability that a survey
-belongs to the outlier observation component. The open circles show the
-uncorrected survey counts. The filled circles are corrected for observer
-efficiency and survey coverage.
+enabled, open circles indicate surveys with posterior outlier
+probabilities exceeding 0.25. These surveys show greater conflict with
+the fitted run-timing and observation model than expected under the
+primary observation process. Survey observations are plotted after
+deterministic correction for observer efficiency and survey coverage to
+facilitate comparison with the estimated number of spawners present.
 
 ``` r
 plot_run_curve(fit)
 ```
 
-![](clemens-creek-sockeye_files/figure-html/run-curves-1.png)
+![](getting-started_files/figure-html/run-curves-1.png)
 
 ## Outlier diagnostics
 
@@ -268,25 +299,26 @@ abund <- abundance(fit)
 knitr::kable(abund)
 ```
 
-| year | median | lwr_95 | lwr_66 | upr_66 | upr_95 |  TAUC | pct_diff_TAUC | multimodal | n_outliers |
-|-----:|-------:|-------:|-------:|-------:|-------:|------:|--------------:|:-----------|-----------:|
-| 2008 |  19440 |   7667 |  13253 |  27912 |  42339 | 14911 |          30.4 | FALSE      |          1 |
-| 2009 |  36456 |  18679 |  25834 |  54909 |  83292 | 37985 |          -4.0 | FALSE      |          0 |
-| 2010 |  39614 |  19414 |  27714 |  61947 |  98563 | 66268 |         -40.2 | FALSE      |          0 |
-| 2011 |  33701 |  18543 |  25176 |  43741 |  58053 | 34652 |          -2.7 | FALSE      |          1 |
-| 2012 |  13689 |   6374 |   9414 |  20310 |  32988 | 16593 |         -17.5 | FALSE      |          1 |
-| 2013 |  14245 |   8658 |  11155 |  18648 |  25445 | 13387 |           6.4 | FALSE      |          0 |
-| 2014 |   8220 |   5171 |   6546 |  10670 |  13892 | 12401 |         -33.7 | FALSE      |          0 |
-| 2015 |   3366 |   2042 |   2695 |   4225 |   5467 |  2611 |          28.9 | TRUE       |          1 |
-| 2016 |  12443 |   7706 |   9864 |  15854 |  21253 | 17529 |         -29.0 | FALSE      |          2 |
-| 2017 |  17173 |   8595 |  11951 |  24746 |  37650 | 30735 |         -44.1 | FALSE      |          4 |
-| 2018 |  16854 |  10247 |  13166 |  22009 |  28915 | 17290 |          -2.5 | TRUE       |          1 |
-| 2019 |   8605 |   5301 |   6863 |  10926 |  14021 |  7904 |           8.9 | TRUE       |          0 |
-| 2020 |   5409 |   3426 |   4285 |   6976 |   9124 |  5188 |           4.3 | FALSE      |          0 |
-| 2021 |  27755 |  15719 |  21061 |  37033 |  52638 | 21745 |          27.6 | FALSE      |          0 |
-| 2022 |   6063 |   3782 |   4799 |   8176 |  13283 | 24805 |         -75.6 | FALSE      |          3 |
-| 2023 |  21717 |  11521 |  15966 |  29003 |  38825 | 24246 |         -10.4 | FALSE      |          2 |
-| 2024 |   6665 |   4221 |   5330 |   8291 |  10554 |  5543 |          20.2 | FALSE      |          1 |
+| group | year | median | lwr_95 | lwr_66 | upr_66 | upr_95 | TAUC | pct_diff_TAUC | multimodal | n_outliers |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|:---|---:|
+| ARTLISH RIVER | 2007 | 397 | 173 | 268 | 658 | 1115 | 415 | -4.3 | FALSE | 2 |
+| ARTLISH RIVER | 2008 | 435 | 196 | 292 | 632 | 901 | 426 | 2.1 | FALSE | 0 |
+| ARTLISH RIVER | 2009 | 357 | 178 | 255 | 478 | 635 | 361 | -1.1 | FALSE | 0 |
+| ARTLISH RIVER | 2010 | 237 | 97 | 152 | 367 | 580 | 101 | 134.7 | FALSE | 0 |
+| ARTLISH RIVER | 2011 | 292 | 98 | 174 | 473 | 780 | 80 | 265.0 | FALSE | 0 |
+| ARTLISH RIVER | 2012 | 110 | 63 | 81 | 172 | 252 | 183 | -39.9 | FALSE | 1 |
+| ARTLISH RIVER | 2013 | 450 | 224 | 301 | 765 | 1324 | 619 | -27.3 | FALSE | 4 |
+| ARTLISH RIVER | 2014 | 174 | 73 | 116 | 259 | 409 | 113 | 54.0 | FALSE | 2 |
+| ARTLISH RIVER | 2015 | 1407 | 624 | 974 | 1884 | 2463 | 1367 | 2.9 | FALSE | 3 |
+| ARTLISH RIVER | 2016 | 305 | 162 | 232 | 386 | 473 | 289 | 5.5 | FALSE | 1 |
+| ARTLISH RIVER | 2017 | 419 | 215 | 297 | 593 | 836 | 394 | 6.3 | FALSE | 1 |
+| ARTLISH RIVER | 2018 | 579 | 287 | 409 | 807 | 1198 | 792 | -26.9 | FALSE | 2 |
+| ARTLISH RIVER | 2019 | 547 | 300 | 419 | 701 | 876 | 612 | -10.6 | FALSE | 1 |
+| ARTLISH RIVER | 2020 | 176 | 93 | 128 | 232 | 305 | 170 | 3.5 | FALSE | 2 |
+| ARTLISH RIVER | 2021 | 398 | 182 | 265 | 576 | 800 | 434 | -8.3 | FALSE | 1 |
+| ARTLISH RIVER | 2023 | 229 | 104 | 156 | 329 | 487 | 203 | 12.8 | FALSE | 0 |
+| ARTLISH RIVER | 2024 | 225 | 115 | 161 | 328 | 571 | 230 | -2.2 | FALSE | 2 |
+| ARTLISH RIVER | 2025 | 604 | 330 | 449 | 789 | 1051 | 587 | 2.9 | FALSE | 1 |
 
 The abundance plot shows the median (point) as well as the 66 and 95%
 posterior credible intervals. The red x shows the estimate based on
@@ -297,7 +329,7 @@ trapezoidal area under the curve, with an assumed 15.5 day residence
 plot_abundance(fit)
 ```
 
-![](clemens-creek-sockeye_files/figure-html/abund-plot-1.png) \# Timing
+![](getting-started_files/figure-html/abund-plot-1.png) \# Timing
 estimates
 
 Run timing summaries describe the estimated distribution of spawner
@@ -307,13 +339,18 @@ arrival dates, residence, and exit lag in each year.
 plot_timing(fit)
 ```
 
-![](clemens-creek-sockeye_files/figure-html/timing-plot-1.png)
+![](getting-started_files/figure-html/timing-plot-1.png)
 
 ## Conclusions
 
 spawnBayes provides a framework for estimating salmon spawner abundance
 and run timing from repeated live-count surveys while accounting for
 uncertainty in both the observation and process components of the model.
+This vignette focused on a single population. The vignette
+[Multi-Population Analyses in
+spawnBayes](https://sire-p.github.io/spawnBayes/articles/multi-population.md)
+demonstrates how multiple groups can be analysed jointly while
+estimating abundance separately for each group.
 
 ## Citation
 

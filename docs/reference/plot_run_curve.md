@@ -1,12 +1,19 @@
 # Plot fitted run curves
 
-Plot posterior estimates of spawners present through time against
-observed survey counts for each year.
+Plot posterior estimates of spawners present through time against survey
+observations for each year.
 
 ## Usage
 
 ``` r
-plot_run_curve(fit, CI = c(66, 95))
+plot_run_curve(
+  fit,
+  CI = c(66, 95),
+  outlier_p_thresh = 0.25,
+  y_scale = c("none", "log10"),
+  facet = c("year", "group_year"),
+  groups = NULL
+)
 ```
 
 ## Arguments
@@ -20,17 +27,43 @@ plot_run_curve(fit, CI = c(66, 95))
   Numeric vector of credible interval widths to plot. Multiple intervals
   may be supplied (e.g., `c(66, 95)`).
 
+- outlier_p_thresh:
+
+  Probability threshold used to classify surveys as potential outliers.
+
+- y_scale:
+
+  Scale used for the y-axis. One of `"none"` or `"log10"`.
+
+- facet:
+
+  Plot layout. One of:
+
+  "year"
+
+  :   One panel per year with groups overlaid.
+
+  "group_year"
+
+  :   Separate panels for each group-year combination.
+
+- groups:
+
+  Optional character vector specifying a subset of groups to include in
+  the plot.
+
 ## Value
 
-A ggplot object showing fitted run curves and observed survey counts by
-year. When available, observation colours indicate posterior
-probabilities of belonging to the outlier observation component.
+A ggplot object showing fitted run curves and corrected survey counts.
 
 ## Details
 
-When an outlier observation model is used, point colours indicate the
-posterior probability that a survey belongs to the outlier component.
+When multiple groups are present, fitted curves and observations are
+coloured by group.
 
-Corrected survey counts used to fit the model are shown as filled
-points. If observer-efficiency or coverage corrections were applied, the
-original uncorrected survey counts are shown as open circles.
+Surveys with posterior outlier probabilities exceeding
+`outlier_p_thresh` are shown as open circles.
+
+Survey observations are plotted after deterministic correction for
+observer efficiency and survey coverage to facilitate comparison with
+the estimated number of spawners present.

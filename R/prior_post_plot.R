@@ -49,24 +49,24 @@ prior_post_plot <- function(fit) {
     ),
     
     data.frame(
-      parameter = "Exit spread",
+      parameter = "Exit lag",
       value = exp(
         rnorm(
           n,
-          priors$residence$mean,
-          priors$residence$sd
+          priors$exit_lag$mean,
+          priors$exit_lag$sd
         )
       ) + 1,
       distribution = "Prior"
     ),
     
     data.frame(
-      parameter = "Exit lag",
+      parameter = "Exit spread",
       value = exp(
         rnorm(
           n,
-          priors$residence$mean,
-          priors$residence$sd
+          priors$spread$mean,
+          priors$spread$sd
         )
       ) + 1,
       distribution = "Prior"
@@ -93,7 +93,7 @@ prior_post_plot <- function(fit) {
     ),
     
     data.frame(
-      parameter = "Exit-spread SD",
+      parameter = "Exit-lag SD",
       value = rlnorm(
         n,
         log(priors$spread_sigma$mean),
@@ -103,7 +103,7 @@ prior_post_plot <- function(fit) {
     ),
     
     data.frame(
-      parameter = "Exit-lag SD",
+      parameter = "Exit-spread SD",
       value = rlnorm(
         n,
         log(priors$spread_sigma$mean),
@@ -153,7 +153,7 @@ prior_post_plot <- function(fit) {
     ),
     
     data.frame(
-      parameter = "Exit spread",
+      parameter = "Exit lag",
       value = exp(
         as.vector(
           fit$fit$draws(
@@ -166,7 +166,7 @@ prior_post_plot <- function(fit) {
     ),
     
     data.frame(
-      parameter = "Exit lag",
+      parameter = "Exit spread",
       value = exp(
         as.vector(
           fit$fit$draws(
@@ -182,7 +182,7 @@ prior_post_plot <- function(fit) {
       parameter = "Arrival SD",
       value = as.vector(
         fit$fit$draws(
-          "timing_sigma[1]",
+          "timing_sigma_year[1]",
           format = "matrix"
         )
       ),
@@ -193,18 +193,7 @@ prior_post_plot <- function(fit) {
       parameter = "Arrival-spread SD",
       value = as.vector(
         fit$fit$draws(
-          "timing_sigma[2]",
-          format = "matrix"
-        )
-      ),
-      distribution = "Posterior"
-    ),
-    
-    data.frame(
-      parameter = "Exit-spread SD",
-      value = as.vector(
-        fit$fit$draws(
-          "timing_sigma[3]",
+          "timing_sigma_year[2]",
           format = "matrix"
         )
       ),
@@ -215,7 +204,18 @@ prior_post_plot <- function(fit) {
       parameter = "Exit-lag SD",
       value = as.vector(
         fit$fit$draws(
-          "timing_sigma[4]",
+          "timing_sigma_year[3]",
+          format = "matrix"
+        )
+      ),
+      distribution = "Posterior"
+    ),
+    
+    data.frame(
+      parameter = "Exit-spread SD",
+      value = as.vector(
+        fit$fit$draws(
+          "timing_sigma_year[4]",
           format = "matrix"
         )
       ),

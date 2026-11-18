@@ -2,11 +2,11 @@
 % Please edit documentation in R/identify_multimodal_years.R
 \name{identify_multimodal_years}
 \alias{identify_multimodal_years}
-\title{Identify years with potentially multimodal run timing}
+\title{Identify group-years with potentially multimodal run timing}
 \usage{
 identify_multimodal_years(data)
 }
 \description{
-Identify years with potentially multimodal run timing
+Identify group-years with potentially multimodal run timing
 }
 \keyword{internal}

@@ -5,5 +5,5 @@ Summarize posterior draws
 ## Usage
 
 ``` r
-summarize_draws(draws, years, CI = c(66, 95))
+summarize_draws(draws, lookup, CI = c(66, 95))
 ```

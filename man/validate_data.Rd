@@ -9,8 +9,8 @@ validate_data(data)
 \arguments{
 \item{data}{Input data frame. Required columns are
 \code{date} and \code{spawner_counts}. Optional columns
-include \code{observer_efficiency}, \code{coverage}, and
-\code{survey_error_group}.}
+include \code{group}, \code{observer_efficiency},
+\code{coverage}, and \code{survey_error_group}.}
 }
 \value{
 A validated and standardized data frame.
@@ -37,6 +37,6 @@ observation-error estimates may be poorly informed.
 The function also evaluates annual run-timing patterns for
 evidence of multiple major peaks. A warning is generated if
 potentially multimodal run timing is detected because
-spawnBayes assumes a single seasonal peak in spawner
-abundance.
+spawnBayes assumes a single seasonal peak within each
+group and year.
 }

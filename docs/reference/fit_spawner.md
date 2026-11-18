@@ -27,12 +27,14 @@ fit_spawner(
 - data:
 
   A data frame containing survey observations. Required columns are
-  `date` and `spawner_counts`. Optional columns include
+  `date` and `spawner_counts`. Optional columns include `group`,
   `observer_efficiency`, `coverage`, and `survey_error_group`.
 
 - abundance:
 
-  Prior estimate of total spawner abundance.
+  Prior estimate of spawner abundance. For multi-group analyses this may
+  be supplied separately for each group. If NULL, default values are
+  estimated from the observed counts.
 
 - assumed_residence:
 
@@ -100,10 +102,15 @@ information including potential multimodal years.
 The input data must contain a `date` column and a `spawner_counts`
 column.
 
-Optional `observer_efficiency`, `coverage`, and `survey_error_group`
-columns may also be supplied. If omitted, observer efficiency and
-coverage are assumed to equal 1 and all observations are assigned to a
-common survey-error group.
+Optional `group`, `observer_efficiency`, `coverage`, and
+`survey_error_group` columns may also be supplied. If omitted, observer
+efficiency and coverage are assumed to equal 1 and all observations are
+assigned to a common survey-error group.
+
+When a group column is supplied (i.e., for different streams, reaches,
+populations), spawnBayes fits a hierarchical multi-group timing model in
+which timing information is shared among groups within years while
+abundance is estimated separately for each group.
 
 When a `survey_error_group` column is provided, spawnBayes estimates
 separate observation-dispersion parameters for each group. This can be

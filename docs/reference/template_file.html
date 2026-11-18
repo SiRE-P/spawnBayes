@@ -20,7 +20,9 @@ input data structure for spawnBayes."><meta property="og:image" content="https:/
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/clemens-creek-sockeye.html">Getting Started with spawnBayes: A Clemens Creek Sockeye Example</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with spawnBayes: A Single-Population Analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/importing-nuseds.html">Importing NuSEDS Data into spawnBayes</a></li>
+    <li><a class="dropdown-item" href="../articles/multi-population.html">Multi-Population Analyses in spawnBayes</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -58,6 +60,22 @@ input data structure for spawnBayes.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>The path to the created file.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The template includes commonly used columns for
+survey date, group identity (e.g., reach, stream, population), observed spawner counts,
+observer efficiency, survey coverage, and survey-error
+classification.</p>
+<p>The template contains a minimal working example suitable
+for fitting a spawnBayes model.</p>
+<p>The <code>group</code> column identifies the unit for which
+abundance is estimated and timing is allowed to vary.
+Groups may represent reaches, streams, rivers,
+populations, index areas, or other biologically
+meaningful survey units.</p>
+<p>Observer efficiency and coverage should be supplied as
+proportions ranging from 0 to 1.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

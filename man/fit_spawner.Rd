@@ -23,10 +23,13 @@ fit_spawner(
 \arguments{
 \item{data}{A data frame containing survey observations.
 Required columns are \code{date} and \code{spawner_counts}.
-Optional columns include \code{observer_efficiency},
+Optional columns include \code{group}, \code{observer_efficiency},
 \code{coverage}, and \code{survey_error_group}.}
 
-\item{abundance}{Prior estimate of total spawner abundance.}
+\item{abundance}{Prior estimate of spawner abundance.
+For multi-group analyses this may be supplied separately
+for each group. If NULL, default values are estimated
+from the observed counts.}
 
 \item{assumed_residence}{Assumed mean residence time (days), also known as survey life.
 If supplied, this value is used to construct the residence-time
@@ -77,11 +80,17 @@ Fit the spawnBayes model to repeated spawner-count surveys.
 The input data must contain a \code{date} column and a
 \code{spawner_counts} column.
 
-Optional \code{observer_efficiency}, \code{coverage}, and
+Optional \code{group}, \code{observer_efficiency}, \code{coverage}, and
 \code{survey_error_group} columns may also be supplied.
 If omitted, observer efficiency and coverage are
 assumed to equal 1 and all observations are assigned
 to a common survey-error group.
+
+When a group column is supplied (i.e., for different streams, reaches, populations), spawnBayes fits
+a hierarchical multi-group timing model in which
+timing information is shared among groups within
+years while abundance is estimated separately for
+each group.
 
 When a \code{survey_error_group} column is provided,
 spawnBayes estimates separate observation-dispersion

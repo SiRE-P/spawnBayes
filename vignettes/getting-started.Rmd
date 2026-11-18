@@ -1,8 +1,8 @@
 ---
-title: "Getting Started with spawnBayes: A Clemens Creek Sockeye Example"
+title: "Getting Started with spawnBayes: A Single-Population Analysis"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Getting Started with spawnBayes: A Clemens Creek Sockeye Example}
+  %\VignetteIndexEntry{Getting Started with spawnBayes: A Single-Population Analysis}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
@@ -33,9 +33,17 @@ The underlying methodology is described in Thompson et al. (2026).
 
 Additional features introduced after Thompson et al. (2026) include support for survey-error groups, allowing separate observation-dispersion parameters to be estimated for different survey types or quality classes, and an optional robust observation model that reduces the influence of anomalous survey counts.
 
-This vignette demonstrates a complete analysis using sockeye salmon survey
-data from Clemens Creek, BC, Canada. These data were provided by Diana
-McHugh, South Coast Stock Assessment, Fisheries and Oceans Canada.
+This vignette demonstrates a complete analysis using Chinook salmon survey
+data from the Artlish River, British Columbia. The Artlish River data are
+drawn from the example dataset `nvi_chinook`, which is included with
+spawnBayes.
+
+Although only a single group is analysed in this vignette, spawnBayes also
+supports analyses involving multiple groups. See
+[Multi-Population Analyses in spawnBayes](multi-population.html)
+for an example based on the same dataset. A group is the unit for which abundance and run timing are estimated independently. Depending on the application, groups may represent reaches, streams, rivers, populations, index areas, or other biologically meaningful assessment units.
+
+Multi-group analyses are covered in a separate vignette.
 
 # Workflow
 
@@ -48,29 +56,34 @@ A typical spawnBayes analysis consists of:
 5. Estimating abundance and run timing.
 
 # Example data
-Load in the example dataset and inspect it. The model requires a date column and a spawner_counts column. Optional observer_efficiency, coverage, and survey_error_group columns can be supplied. Observation efficiency and coverage are used to adjust observed counts, while survey_error_group allows separate observation-dispersion parameters to be estimated for different survey types or quality classes.
+Load in the example dataset and inspect it. The model requires a date column and a spawner_counts column. Optional observer_efficiency, coverage, and survey_error_group columns can be supplied. Observer efficiency and coverage are used to account for imperfect detection when relating observed survey counts to the estimated number of spawners present. The survey_error_group column allows separate observation-dispersion parameters to be estimated for different survey types or quality classes.
 
-In this case, dates are provided as character strings, and observer efficiency and coverage have been provided as percentages. These will be converted into the proper format in the data validation step.
+In this example, survey dates have already been converted to Date format and correction factors have been supplied as proportions. The validation step checks data integrity, standardizes optional fields, and identifies potential issues such as sparse sampling or evidence of multiple run peaks.
 
 
 ```{r load-data}
-data(clemens_sockeye)
+data("nvi_chinook")
 
-summary(clemens_sockeye)
+artlish <- nvi_chinook |>
+  dplyr::filter(
+    group == "ARTLISH RIVER"
+  )
+
+summary(artlish)
 ```
 
 # Validate data
 The first step is to validate and standardize the input data. This converts the dates into their proper format and converts observer efficiency and coverage to proportions if they were provided as percentages. Validation may generate warnings if missing correction factors are supplied or if some years show potential evidence of multiple run peaks.
 ```{r validate-data}
-clemens_sockeye <- validate_data(clemens_sockeye)
+artlish <- validate_data(artlish)
 
-summary(clemens_sockeye)
+summary(artlish)
 ```
 
 # Survey observations
 Now plot the raw survey counts by date in each year.
 ```{r plot-data, fig.width=8, fig.height=5}
-ggplot(clemens_sockeye |> mutate(year = year(date), day = yday(date)),
+ggplot(artlish |> mutate(year = year(date), day = yday(date)),
   aes(x = day, y = spawner_counts, fill = observer_efficiency))+
   geom_point(pch = 21, size = 2) +
   facet_wrap(~year, scales = "free_y")+
@@ -98,8 +111,8 @@ ggplot(clemens_sockeye |> mutate(year = year(date), day = yday(date)),
 
 # Fit the model
 spawnBayes estimates annual run timing and abundance jointly across years.
-Information is shared among years through a hierarchical model, improving
-estimation in years with sparse survey data.
+In this single-group example, information is shared among years through a
+hierarchical model, improving estimation in years with sparse survey data.
 
 By default, spawnBayes fits a robust observation model that allows a small proportion of surveys to arise from a higher-variance observation process. This reduces the influence of unusual surveys on abundance and run-timing estimates. The feature can be disabled using outlier_model = FALSE.
 
@@ -108,7 +121,7 @@ reasonable. For applied analyses, users should always examine the
 diagnostic output and increase the number of iterations when recommended. 
 Even so, the model may require several minutes to fit.
 ```{r fit-model, cache=FALSE, message=FALSE, warning=FALSE}
-fit <- fit_spawner(clemens_sockeye, iter_warmup = 500, iter_sampling = 500, assumed_residence = 15.5, adapt_delta = 0.99, refresh = 0)
+fit <- fit_spawner(artlish, iter_warmup = 500, iter_sampling = 500, assumed_residence = 15.5, adapt_delta = 0.99, refresh = 0)
 ```
 
 # Model diagnostics
@@ -146,7 +159,7 @@ prior_post_plot(fit)
 # Estimated run
 The fitted curves represent the estimated number of spawners present
 through time. Shaded regions show the 66 and 95% credible intervals.
-Observed survey counts are shown as points. When the outlier model is enabled, point colour indicates the posterior probability that a survey belongs to the outlier observation component. The open circles show the uncorrected survey counts. The filled circles are corrected for observer efficiency and survey coverage. 
+Observed survey counts are shown as points. When the outlier model is enabled, open circles indicate surveys with posterior outlier probabilities exceeding 0.25. These surveys show greater conflict with the fitted run-timing and observation model than expected under the primary observation process. Survey observations are plotted after deterministic correction for observer efficiency and survey coverage to facilitate comparison with the estimated number of spawners present.
 
 ```{r run-curves, fig.width=8, fig.height=7}
 plot_run_curve(fit)
@@ -187,6 +200,10 @@ plot_timing(fit)
 spawnBayes provides a framework for estimating salmon spawner abundance
 and run timing from repeated live-count surveys while accounting for
 uncertainty in both the observation and process components of the model.
+This vignette focused on a single population. The vignette
+[Multi-Population Analyses in spawnBayes](multi-population.html) demonstrates how multiple
+groups can be analysed jointly while estimating abundance separately
+for each group.
 
 # Citation
 

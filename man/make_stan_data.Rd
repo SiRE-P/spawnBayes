@@ -21,6 +21,8 @@ A list containing:
 \item{stan_data}{Data list supplied to Stan.}
 \item{day_stand}{Reference day used for day standardization.}
 \item{year_lookup}{Mapping between Stan year indices and calendar years.}
+\item{group_lookup}{Mapping between Stan group indices and group names.}
+\item{log_run_lookup}{Mapping between Stan log_run indices and year-group combinations.}
 }
 }
 \description{

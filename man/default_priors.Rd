@@ -15,8 +15,11 @@ default_priors(
 \arguments{
 \item{data}{A data frame containing survey observations.}
 
-\item{abundance}{Expected total spawner abundance. If NULL,
-a default value is estimated from the observed counts.}
+\item{abundance}{Expected spawner abundance. May be a
+single value applied to all groups or a named vector
+containing separate values for each group. If NULL,
+group-specific values are estimated from the observed
+survey counts.}
 
 \item{assumed_residence}{Assumed mean residence time (days).
 If supplied, this value is used to define the residence-time prior.

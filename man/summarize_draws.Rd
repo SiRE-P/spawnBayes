@@ -4,7 +4,7 @@
 \alias{summarize_draws}
 \title{Summarize posterior draws}
 \usage{
-summarize_draws(draws, years, CI = c(66, 95))
+summarize_draws(draws, lookup, CI = c(66, 95))
 }
 \description{
 Summarize posterior draws

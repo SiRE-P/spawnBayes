@@ -1,6 +1,6 @@
-# Identify years with potentially multimodal run timing
+# Identify group-years with potentially multimodal run timing
 
-Identify years with potentially multimodal run timing
+Identify group-years with potentially multimodal run timing
 
 ## Usage
 

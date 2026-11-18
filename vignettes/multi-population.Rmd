@@ -1,0 +1,155 @@
+---
+title: "Multi-Population Analyses in spawnBayes"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Multi-Population Analyses in spawnBayes}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+
+```{r setup, message = FALSE, warning = FALSE}
+library(spawnBayes)
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+# Introduction
+
+In many monitoring programs, salmon abundance is assessed simultaneously across multiple rivers, reaches, or index areas. When populations exhibit similar seasonal timing patterns, analysing groups jointly can improve estimation in years with sparse survey coverage while retaining separate abundance estimates for each group.
+
+This vignette demonstrates the multi-group capabilities of spawnBayes using Chinook salmon survey data from the Artlish, Kaouk, and Tahsish rivers on northwest Vancouver Island. The same dataset is used in the
+[Getting Started with spawnBayes](getting-started.html)
+vignette, where only Artlish River is analysed.
+
+# Example data
+The dataset contains survey observations from three rivers. Groups represent the units for which abundance and timing are estimated separately.
+
+
+```{r load-data}
+data("nvi_chinook")
+
+summary(nvi_chinook)
+```
+
+# Validate data
+The first step is to validate and standardize the input data. This converts the dates into their proper format and converts observer efficiency and coverage to proportions if they were provided as percentages. Validation may generate warnings if missing correction factors are supplied or if some years show potential evidence of multiple run peaks.
+```{r validate-data}
+nvi_chinook <- validate_data(nvi_chinook)
+
+summary(nvi_chinook)
+```
+
+# Survey observations
+Now plot the raw survey counts by date in each year.
+```{r plot-data, fig.width=8, fig.height=5}
+ggplot(nvi_chinook |> mutate(year = year(date), day = yday(date)),
+  aes(x = day, y = spawner_counts, fill = group))+
+  geom_point(pch = 21, size = 2) +
+  facet_wrap(~year, scales = "free_y")+
+  theme_bw() +
+    theme(
+      strip.background = element_blank(),
+      panel.grid.minor = element_blank()
+    ) +
+    scale_y_continuous(
+      labels = scales::label_number(
+        scale_cut = scales::cut_short_scale()
+      ),
+      name = "Spawners observed"
+    ) +
+    scale_x_continuous(
+      labels = function(x)
+        format(
+          as.Date(x, origin = "2023-12-31"),
+          "%b"
+        ),
+      name = NULL
+    )
+```
+
+# Fit the model
+Unlike the single-population analysis presented in the introductory vignette, this model is fit to all three rivers simultaneously. Abundance is estimated separately for each group, but information about seasonal timing is shared hierarchically among groups. This structure can improve estimation in years where individual groups have sparse survey coverage.
+
+```{r fit-model, cache=FALSE, message=FALSE, warning=FALSE}
+fit <- fit_spawner(nvi_chinook, iter_warmup = 500, iter_sampling = 500, assumed_residence = 15.5, adapt_delta = 0.99, refresh = 0)
+```
+
+# Model diagnostics
+
+As with single-population analyses, model convergence should be assessed using Rhat, effective sample sizes, divergent transitions, and tree-depth warnings. All diagnostic checks were acceptable in this example.
+
+```{r diagnostics}
+diagnostics(fit)
+```
+
+# Prior-posterior comparisons
+
+Prior-posterior comparisons provide a useful diagnostic for assessing the
+extent to which parameter estimates are informed by the data. See the vignette [Getting Started with spawnBayes](getting-started.html) for more information.
+```{r prior-post, fig.width=8, fig.height=7}
+prior_post_plot(fit)
+```
+
+# Estimated run
+The fitted curves represent the estimated number of spawners present
+through time. Shaded regions show the 66 and 95% credible intervals.
+Observed survey counts are shown as points. When the outlier model is enabled, open circles indicate surveys with posterior outlier probabilities exceeding 0.25. These surveys show greater conflict with the fitted run-timing and observation model than expected under the primary observation process. Survey observations are plotted after deterministic correction for observer efficiency and survey coverage to facilitate comparison with the estimated number of spawners present.
+
+```{r run-curves, fig.width=12, fig.height=7}
+plot_run_curve(fit,facet = "group_year")
+```
+
+# Outlier diagnostics  
+
+`spawnBayes` can identify surveys that deviate substantially from the overall run-timing pattern. These observations are not removed from the analysis; instead, the model estimates the probability that they arise from a higher-variance observation process and correspondingly reduces their influence on parameter estimation.
+
+Surveys with elevated outlier probabilities may reflect counting errors, unusual survey conditions, inaccuracies in correction factors, or biological patterns that are not fully captured by the run-timing model. Elevated outlier probabilities do not necessarily indicate erroneous data. Rather, they identify observations that are difficult to reconcile with the fitted observation and run-timing processes.
+
+Users are encouraged to inspect years containing surveys with high outlier probabilities and assess whether the fitted run-timing model is appropriate for estimating spawner abundance.
+
+# Abundance estimates
+
+Because abundance is estimated separately for each group, the resulting summaries can be used to compare population trajectories among rivers. In this example, the three rivers exhibit substantial variation in abundance among years, despite occurring within the same geographic region.
+
+```{r abundance}
+abund <- abundance(fit)
+knitr::kable(abund)
+```
+
+The abundance plot shows the median (point) as well as the 66 and 95% posterior credible intervals. The red x shows the estimate based on trapezoidal area under the curve, with an assumed 15.5 day residence (survey life).
+```{r abund-plot, fig.width=10, fig.height=4}
+plot_abundance(fit)
+```
+# Timing estimates 
+
+Although the three rivers are geographically proximate, timing differs among groups and among years. The multi-group model estimates these patterns simultaneously, allowing information to be shared across groups while retaining group-specific timing estimates.
+
+```{r timing-plot, fig.width=10, fig.height=8}
+plot_timing(fit)
+```
+
+# Conclusions
+
+spawnBayes can estimate abundance and run timing simultaneously across multiple groups while accounting for uncertainty in both the observation and process components of the model. In this example, Artlish, Kaouk, and Tahsish rivers were analysed jointly, allowing information about run timing to be shared among groups while estimating abundance separately for each river.
+
+# Citation
+
+The methods implemented in `spawnBayes` are described in:
+
+Thompson, P. L., Akenhead, S. A., and Louie, C. (2026).
+*Estimating spawning salmon abundance from visual surveys:
+a hierarchical model of arrival and exit dynamics*.
+Canadian Journal of Fisheries and Aquatic Sciences, 83, 1-13.
+https://doi.org/10.1139/cjfas-2026-0029
+
+Users are encouraged to cite both the package and the accompanying
+manuscript when using spawnBayes in scientific publications.
