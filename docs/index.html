@@ -41,7 +41,9 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/clemens-creek-sockeye.html">Getting Started with spawnBayes: A Clemens Creek Sockeye Example</a></li>
+<li><a class="dropdown-item" href="articles/getting-started.html">Getting Started with spawnBayes: A Single-Population Analysis</a></li>
+    <li><a class="dropdown-item" href="articles/importing-nuseds.html">Importing NuSEDS Data into spawnBayes</a></li>
+    <li><a class="dropdown-item" href="articles/multi-population.html">Multi-Population Analyses in spawnBayes</a></li>
   </ul>
 </li>
       </ul>
@@ -62,12 +64,13 @@
 <img src="logo.png" class="logo" alt=""><h1 id="spawnbayes-">spawnBayes <a class="anchor" aria-label="anchor" href="#spawnbayes-"></a>
 </h1>
 </div>
-<p><code>spawnBayes</code> estimates salmon spawner abundance and run timing from repeated live-count surveys. Unlike traditional area-under-the-curve approaches, <code>spawnBayes</code> estimates abundance, run timing, and their associated uncertainty while allowing residence time to vary among years.</p>
+<p><code>spawnBayes</code> estimates salmon spawner abundance and run timing from repeated live-count surveys.Unlike traditional area-under-the-curve (TAUC) approaches, <code>spawnBayes</code> jointly estimates abundance, run timing, effective residence time, and associated uncertainty using a hierarchical Bayesian model.</p>
+<p>The package supports analyses of individual streams as well as integrated analyses across multiple groups. Groups may represent reaches, streams, rivers, populations, index areas, or other biologically meaningful assessment units. In multi-group analyses, timing information is shared among groups while abundance is estimated separately for each group.</p>
 <p>The package is designed to support salmon stock assessment and escapement monitoring programs. Users provide survey dates and spawner counts and obtain estimates of annual abundance, run timing, effective residence time, and associated uncertainty.</p>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
-<p>Online documentation, reference manuals, and a complete worked example are available at:</p>
+<p>Online documentation, function reference pages, and worked tutorials are available at:</p>
 <p><a href="https://sire-p.github.io/spawnBayes/">spawnBayes documentation</a></p>
 </div>
 <div class="section level2">
@@ -128,49 +131,72 @@
 </tr></thead>
 <tbody>
 <tr class="odd">
+<td><code>group</code></td>
+<td>Group identifier (reach, stream, river, population, index area, etc.)</td>
+</tr>
+<tr class="even">
 <td><code>observer_efficiency</code></td>
 <td>Proportion of fish detected during a survey (0-1)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>coverage</code></td>
 <td>Proportion of spawning habitat surveyed (0-1)</td>
 </tr>
+<tr class="even">
+<td><code>survey_error_group</code></td>
+<td>Observation-error category used to estimate group-specific observation dispersion</td>
+</tr>
 </tbody>
 </table>
+<p>If <code>group</code> is omitted, all observations are assumed to belong to a single group.</p>
 <p>If <code>observer_efficiency</code> or <code>coverage</code> are omitted, values of 1 are assumed.</p>
+<p>If <code>survey_error_group</code> is omitted, all observations are assumed to share a common observation-error distribution.</p>
 </div>
 <div class="section level2">
-<h2 id="quick-example">Quick Example<a class="anchor" aria-label="anchor" href="#quick-example"></a>
+<h2 id="what-is-a-group">What Is a Group?<a class="anchor" aria-label="anchor" href="#what-is-a-group"></a>
 </h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sire-p.github.io/spawnBayes">spawnBayes</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">clemens_sockeye</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/fit_spawner.html">fit_spawner</a></span><span class="op">(</span></span>
-<span>  <span class="va">clemens_sockeye</span>,</span>
-<span>  assumed_residence <span class="op">=</span> <span class="fl">15.5</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="reference/plot_run_curve.html">plot_run_curve</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
-<p>Estimate annual abundance:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/abundance.html">abundance</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
-<p>Estimate run timing:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/timing.html">timing</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<p>A group is the unit for which abundance is estimated and timing is allowed to vary independently.</p>
+<p>Groups may represent:</p>
+<ul>
+<li>stream reaches</li>
+<li>streams</li>
+<li>rivers</li>
+<li>populations</li>
+<li>index areas</li>
+<li>other biologically meaningful assessment units</li>
+</ul>
+<p>Single-group analyses estimate abundance for one group. Multi-group analyses share timing information among groups while estimating abundance separately for each group.</p>
+<p>In general, groups should be analysed together when they are expected to share broad seasonal timing patterns and survey information from one group may help inform timing estimates in another.</p>
+<p>Groups may be analysed separately or jointly. When in doubt, fitting both a single-group and multi-group model can help assess whether shared timing information improves inference.</p>
 </div>
 <div class="section level2">
-<h2 id="worked-example">Worked Example<a class="anchor" aria-label="anchor" href="#worked-example"></a>
+<h2 id="tutorials">Tutorials<a class="anchor" aria-label="anchor" href="#tutorials"></a>
 </h2>
-<p>A complete worked example using Clemens Creek Sockeye salmon data is available in the documentation:</p>
-<p><a href="https://sire-p.github.io/spawnBayes/articles/clemens-creek-sockeye.html">Clemens Creek Sockeye Example</a></p>
+<p>The package includes three worked tutorials:</p>
+<div class="section level3">
+<h3 id="getting-started-with-spawnbayes">Getting Started with spawnBayes<a class="anchor" aria-label="anchor" href="#getting-started-with-spawnbayes"></a>
+</h3>
+<p>Learn how to fit and interpret a single-population model using Artlish River Chinook salmon data.</p>
+<p><a href="articles/getting-started.html">Getting Started with spawnBayes</a></p>
+</div>
+<div class="section level3">
+<h3 id="multi-population-analyses-in-spawnbayes">Multi-Population Analyses in spawnBayes<a class="anchor" aria-label="anchor" href="#multi-population-analyses-in-spawnbayes"></a>
+</h3>
+<p>Fit multiple rivers jointly and share timing information among groups while estimating abundance separately for each population.</p>
+<p><a href="articles/multi-population.html">Multi-Population Analyses in spawnBayes</a></p>
+</div>
+<div class="section level3">
+<h3 id="importing-nuseds-data-into-spawnbayes">Importing NuSEDS Data into spawnBayes<a class="anchor" aria-label="anchor" href="#importing-nuseds-data-into-spawnbayes"></a>
+</h3>
+<p>Learn how to export data from NuSEDS and import it directly into <code>spawnBayes</code> using <code><a href="reference/read_nuseds.html">read_nuseds()</a></code>.</p>
+<p><a href="articles/importing-nuseds.html">Importing NuSEDS Data into spawnBayes</a></p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="data-template">Data Template<a class="anchor" aria-label="anchor" href="#data-template"></a>
 </h2>
 <p>Create a template CSV file in the current working directory:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/template_file.html">template_file</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>This creates:</p>
 <pre class="text"><code><span><span class="va">spawnBayes_template.csv</span></span></code></pre>

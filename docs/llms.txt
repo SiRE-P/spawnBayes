@@ -1,10 +1,17 @@
 # spawnBayes
 
 `spawnBayes` estimates salmon spawner abundance and run timing from
-repeated live-count surveys. Unlike traditional area-under-the-curve
-approaches, `spawnBayes` estimates abundance, run timing, and their
-associated uncertainty while allowing residence time to vary among
-years.
+repeated live-count surveys.Unlike traditional area-under-the-curve
+(TAUC) approaches, `spawnBayes` jointly estimates abundance, run timing,
+effective residence time, and associated uncertainty using a
+hierarchical Bayesian model.
+
+The package supports analyses of individual streams as well as
+integrated analyses across multiple groups. Groups may represent
+reaches, streams, rivers, populations, index areas, or other
+biologically meaningful assessment units. In multi-group analyses,
+timing information is shared among groups while abundance is estimated
+separately for each group.
 
 The package is designed to support salmon stock assessment and
 escapement monitoring programs. Users provide survey dates and spawner
@@ -13,8 +20,8 @@ residence time, and associated uncertainty.
 
 ## Documentation
 
-Online documentation, reference manuals, and a complete worked example
-are available at:
+Online documentation, function reference pages, and worked tutorials are
+available at:
 
 [spawnBayes documentation](https://sire-p.github.io/spawnBayes/)
 
@@ -63,48 +70,76 @@ Required columns:
 
 Optional columns:
 
-| Variable              | Description                                       |
-|-----------------------|---------------------------------------------------|
+| Variable | Description |
+|----|----|
+| `group` | Group identifier (reach, stream, river, population, index area, etc.) |
 | `observer_efficiency` | Proportion of fish detected during a survey (0-1) |
-| `coverage`            | Proportion of spawning habitat surveyed (0-1)     |
+| `coverage` | Proportion of spawning habitat surveyed (0-1) |
+| `survey_error_group` | Observation-error category used to estimate group-specific observation dispersion |
+
+If `group` is omitted, all observations are assumed to belong to a
+single group.
 
 If `observer_efficiency` or `coverage` are omitted, values of 1 are
 assumed.
 
-## Quick Example
+If `survey_error_group` is omitted, all observations are assumed to
+share a common observation-error distribution.
 
-``` r
-library(spawnBayes)
+## What Is a Group?
 
-data(clemens_sockeye)
+A group is the unit for which abundance is estimated and timing is
+allowed to vary independently.
 
-fit <- fit_spawner(
-  clemens_sockeye,
-  assumed_residence = 15.5
-)
+Groups may represent:
 
-plot_run_curve(fit)
-```
+- stream reaches
+- streams
+- rivers
+- populations
+- index areas
+- other biologically meaningful assessment units
 
-Estimate annual abundance:
+Single-group analyses estimate abundance for one group. Multi-group
+analyses share timing information among groups while estimating
+abundance separately for each group.
 
-``` r
-abundance(fit)
-```
+In general, groups should be analysed together when they are expected to
+share broad seasonal timing patterns and survey information from one
+group may help inform timing estimates in another.
 
-Estimate run timing:
+Groups may be analysed separately or jointly. When in doubt, fitting
+both a single-group and multi-group model can help assess whether shared
+timing information improves inference.
 
-``` r
-timing(fit)
-```
+## Tutorials
 
-## Worked Example
+The package includes three worked tutorials:
 
-A complete worked example using Clemens Creek Sockeye salmon data is
-available in the documentation:
+### Getting Started with spawnBayes
 
-[Clemens Creek Sockeye
-Example](https://sire-p.github.io/spawnBayes/articles/clemens-creek-sockeye.html)
+Learn how to fit and interpret a single-population model using Artlish
+River Chinook salmon data.
+
+[Getting Started with
+spawnBayes](https://sire-p.github.io/spawnBayes/articles/getting-started.md)
+
+### Multi-Population Analyses in spawnBayes
+
+Fit multiple rivers jointly and share timing information among groups
+while estimating abundance separately for each population.
+
+[Multi-Population Analyses in
+spawnBayes](https://sire-p.github.io/spawnBayes/articles/multi-population.md)
+
+### Importing NuSEDS Data into spawnBayes
+
+Learn how to export data from NuSEDS and import it directly into
+`spawnBayes` using
+[`read_nuseds()`](https://sire-p.github.io/spawnBayes/reference/read_nuseds.md).
+
+[Importing NuSEDS Data into
+spawnBayes](https://sire-p.github.io/spawnBayes/articles/importing-nuseds.md)
 
 ## Data Template
 
@@ -145,14 +180,20 @@ Sciences, 83, 1-13. <https://doi.org/10.1139/cjfas-2026-0029>
   : Summarize model diagnostics
 - [`fit_spawner()`](https://sire-p.github.io/spawnBayes/reference/fit_spawner.md)
   : Fit a spawner abundance model
+- [`nvi_chinook`](https://sire-p.github.io/spawnBayes/reference/nvi_chinook.md)
+  : Northwest Vancouver Island Chinook spawner survey data
 - [`plot_abundance()`](https://sire-p.github.io/spawnBayes/reference/plot_abundance.md)
   : Plot abundance estimates
+- [`plot_nuseds()`](https://sire-p.github.io/spawnBayes/reference/plot_nuseds.md)
+  : Plot imported NuSEDS survey data
 - [`plot_run_curve()`](https://sire-p.github.io/spawnBayes/reference/plot_run_curve.md)
   : Plot fitted run curves
 - [`plot_timing()`](https://sire-p.github.io/spawnBayes/reference/plot_timing.md)
   : Plot timing estimates
 - [`prior_post_plot()`](https://sire-p.github.io/spawnBayes/reference/prior_post_plot.md)
   : Plot prior and posterior distributions
+- [`read_nuseds()`](https://sire-p.github.io/spawnBayes/reference/read_nuseds.md)
+  : Import NuSEDS stream inspection log exports
 - [`template_file()`](https://sire-p.github.io/spawnBayes/reference/template_file.md)
   : Create a spawnBayes data template
 - [`timing()`](https://sire-p.github.io/spawnBayes/reference/timing.md)
@@ -164,5 +205,9 @@ Sciences, 83, 1-13. <https://doi.org/10.1139/cjfas-2026-0029>
 
 ### All vignettes
 
-- [Getting Started with spawnBayes: A Clemens Creek Sockeye
-  Example](https://sire-p.github.io/spawnBayes/articles/clemens-creek-sockeye.md):
+- [Getting Started with spawnBayes: A Single-Population
+  Analysis](https://sire-p.github.io/spawnBayes/articles/getting-started.md):
+- [Importing NuSEDS Data into
+  spawnBayes](https://sire-p.github.io/spawnBayes/articles/importing-nuseds.md):
+- [Multi-Population Analyses in
+  spawnBayes](https://sire-p.github.io/spawnBayes/articles/multi-population.md):

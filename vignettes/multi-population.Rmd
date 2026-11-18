@@ -129,7 +129,7 @@ The abundance plot shows the median (point) as well as the 66 and 95% posterior 
 ```{r abund-plot, fig.width=10, fig.height=4}
 plot_abundance(fit)
 ```
-# Timing estimates
+# Timing estimates 
 
 Although the three rivers are geographically proximate, timing differs among groups and among years. The multi-group model estimates these patterns simultaneously, allowing information to be shared across groups while retaining group-specific timing estimates.
 

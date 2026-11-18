@@ -1,7 +1,9 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://sire-p.github.io/spawnBayes/404.html</loc></url>
-<url><loc>https://sire-p.github.io/spawnBayes/articles/clemens-creek-sockeye.html</loc></url>
+<url><loc>https://sire-p.github.io/spawnBayes/articles/getting-started.html</loc></url>
+<url><loc>https://sire-p.github.io/spawnBayes/articles/importing-nuseds.html</loc></url>
 <url><loc>https://sire-p.github.io/spawnBayes/articles/index.html</loc></url>
+<url><loc>https://sire-p.github.io/spawnBayes/articles/multi-population.html</loc></url>
 <url><loc>https://sire-p.github.io/spawnBayes/authors.html</loc></url>
 <url><loc>https://sire-p.github.io/spawnBayes/index.html</loc></url>
 <url><loc>https://sire-p.github.io/spawnBayes/LICENSE-text.html</loc></url>
@@ -16,10 +18,13 @@
 <url><loc>https://sire-p.github.io/spawnBayes/reference/index.html</loc></url>
 <url><loc>https://sire-p.github.io/spawnBayes/reference/make_inits.html</loc></url>
 <url><loc>https://sire-p.github.io/spawnBayes/reference/make_stan_data.html</loc></url>
+<url><loc>https://sire-p.github.io/spawnBayes/reference/nvi_chinook.html</loc></url>
 <url><loc>https://sire-p.github.io/spawnBayes/reference/plot_abundance.html</loc></url>
+<url><loc>https://sire-p.github.io/spawnBayes/reference/plot_nuseds.html</loc></url>
 <url><loc>https://sire-p.github.io/spawnBayes/reference/plot_run_curve.html</loc></url>
 <url><loc>https://sire-p.github.io/spawnBayes/reference/plot_timing.html</loc></url>
 <url><loc>https://sire-p.github.io/spawnBayes/reference/prior_post_plot.html</loc></url>
+<url><loc>https://sire-p.github.io/spawnBayes/reference/read_nuseds.html</loc></url>
 <url><loc>https://sire-p.github.io/spawnBayes/reference/summarize_draws.html</loc></url>
 <url><loc>https://sire-p.github.io/spawnBayes/reference/template_file.html</loc></url>
 <url><loc>https://sire-p.github.io/spawnBayes/reference/timing.html</loc></url>

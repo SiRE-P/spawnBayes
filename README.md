@@ -111,21 +111,21 @@ The package includes three worked tutorials:
 Learn how to fit and interpret a single-population model using Artlish River
 Chinook salmon data.
 
-[Getting Started with spawnBayes](https://sire-p.github.io/spawnBayes/articles/getting-started.html)
+[Getting Started with spawnBayes](articles/getting-started.html)
 
 ### Multi-Population Analyses in spawnBayes
 
 Fit multiple rivers jointly and share timing information among groups while
 estimating abundance separately for each population.
 
-[Multi-Population Analyses in spawnBayes](https://sire-p.github.io/spawnBayes/articles/multi-population.html)
+[Multi-Population Analyses in spawnBayes](articles/multi-population.html)
 
 ### Importing NuSEDS Data into spawnBayes
 
 Learn how to export data from NuSEDS and import it directly into `spawnBayes`
 using `read_nuseds()`.
 
-[Importing NuSEDS Data into spawnBayes](https://sire-p.github.io/spawnBayes/articles/importing-nuseds.html)
+[Importing NuSEDS Data into spawnBayes](articles/importing-nuseds.html)
 
 
 ## Data Template

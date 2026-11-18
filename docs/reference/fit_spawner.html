@@ -18,7 +18,9 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/clemens-creek-sockeye.html">Getting Started with spawnBayes: A Clemens Creek Sockeye Example</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with spawnBayes: A Single-Population Analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/importing-nuseds.html">Importing NuSEDS Data into spawnBayes</a></li>
+    <li><a class="dropdown-item" href="../articles/multi-population.html">Multi-Population Analyses in spawnBayes</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -65,12 +67,15 @@
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>A data frame containing survey observations.
 Required columns are <code>date</code> and <code>spawner_counts</code>.
-Optional columns include <code>observer_efficiency</code>,
+Optional columns include <code>group</code>, <code>observer_efficiency</code>,
 <code>coverage</code>, and <code>survey_error_group</code>.</p></dd>
 
 
 <dt id="arg-abundance">abundance<a class="anchor" aria-label="anchor" href="#arg-abundance"></a></dt>
-<dd><p>Prior estimate of total spawner abundance.</p></dd>
+<dd><p>Prior estimate of spawner abundance.
+For multi-group analyses this may be supplied separately
+for each group. If NULL, default values are estimated
+from the observed counts.</p></dd>
 
 
 <dt id="arg-assumed-residence">assumed_residence<a class="anchor" aria-label="anchor" href="#arg-assumed-residence"></a></dt>
@@ -142,11 +147,16 @@ potential multimodal years.</p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The input data must contain a <code>date</code> column and a
 <code>spawner_counts</code> column.</p>
-<p>Optional <code>observer_efficiency</code>, <code>coverage</code>, and
+<p>Optional <code>group</code>, <code>observer_efficiency</code>, <code>coverage</code>, and
 <code>survey_error_group</code> columns may also be supplied.
 If omitted, observer efficiency and coverage are
 assumed to equal 1 and all observations are assigned
 to a common survey-error group.</p>
+<p>When a group column is supplied (i.e., for different streams, reaches, populations), spawnBayes fits
+a hierarchical multi-group timing model in which
+timing information is shared among groups within
+years while abundance is estimated separately for
+each group.</p>
 <p>When a <code>survey_error_group</code> column is provided,
 spawnBayes estimates separate observation-dispersion
 parameters for each group. This can be used to account

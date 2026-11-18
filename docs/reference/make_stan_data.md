@@ -40,3 +40,11 @@ A list containing:
 - year_lookup:
 
   Mapping between Stan year indices and calendar years.
+
+- group_lookup:
+
+  Mapping between Stan group indices and group names.
+
+- log_run_lookup:
+
+  Mapping between Stan log_run indices and year-group combinations.

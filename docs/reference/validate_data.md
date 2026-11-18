@@ -16,8 +16,8 @@ validate_data(data)
 - data:
 
   Input data frame. Required columns are `date` and `spawner_counts`.
-  Optional columns include `observer_efficiency`, `coverage`, and
-  `survey_error_group`.
+  Optional columns include `group`, `observer_efficiency`, `coverage`,
+  and `survey_error_group`.
 
 ## Value
 
@@ -38,4 +38,4 @@ informed.
 The function also evaluates annual run-timing patterns for evidence of
 multiple major peaks. A warning is generated if potentially multimodal
 run timing is detected because spawnBayes assumes a single seasonal peak
-in spawner abundance.
+within each group and year.

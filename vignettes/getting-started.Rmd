@@ -2,7 +2,7 @@
 title: "Getting Started with spawnBayes: A Single-Population Analysis"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Getting Started with spawnBayes}
+  %\VignetteIndexEntry{Getting Started with spawnBayes: A Single-Population Analysis}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
