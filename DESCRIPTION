@@ -1,6 +1,6 @@
 Package: spawnBayes
 Title: Estimate Spawner Abundance and Run Timing from Live Count Data
-Version: 0.2.0
+Version: 0.3.0
 Authors@R:
     person("Patrick", "Thompson",
            email = "patrick.thompson@dfo-mpo.gc.ca",
