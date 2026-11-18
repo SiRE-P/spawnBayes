@@ -20,7 +20,9 @@ Imports:
     dplyr,
     ggplot2,
     lubridate,
-    scales
+    scales,
+    purrr,
+    readxl
 Remotes:
     stan-dev/cmdstanr
 Depends: 
