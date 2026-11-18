@@ -39,7 +39,9 @@ drawn from the example dataset `nvi_chinook`, which is included with
 spawnBayes.
 
 Although only a single group is analysed in this vignette, spawnBayes also
-supports analyses involving multiple groups. A group is the unit for which abundance and run timing are estimated independently. Depending on the application, groups may represent reaches, streams, rivers, populations, index areas, or other biologically meaningful assessment units.
+supports analyses involving multiple groups. See
+[Multi-Population Analyses in spawnBayes](multi-population.html)
+for an example based on the same dataset. A group is the unit for which abundance and run timing are estimated independently. Depending on the application, groups may represent reaches, streams, rivers, populations, index areas, or other biologically meaningful assessment units.
 
 Multi-group analyses are covered in a separate vignette.
 
@@ -199,7 +201,7 @@ spawnBayes provides a framework for estimating salmon spawner abundance
 and run timing from repeated live-count surveys while accounting for
 uncertainty in both the observation and process components of the model.
 This vignette focused on a single population. The vignette
-"Multi-Population Analyses in spawnBayes" demonstrates how multiple
+[Multi-Population Analyses in spawnBayes](multi-population.html) demonstrates how multiple
 groups can be analysed jointly while estimating abundance separately
 for each group.
 

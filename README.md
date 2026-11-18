@@ -15,8 +15,7 @@ time, and associated uncertainty.
 
 ## Documentation
 
-Online documentation, reference manuals, and a complete worked example
-are available at:
+Online documentation, function reference pages, and worked tutorials are available at:
 
 [spawnBayes documentation](https://sire-p.github.io/spawnBayes/)
 
@@ -103,50 +102,31 @@ may help inform timing estimates in another.
 
 Groups may be analysed separately or jointly. When in doubt, fitting both a single-group and multi-group model can help assess whether shared timing information improves inference.
 
-## Quick Example
+## Tutorials
 
-```r
-library(spawnBayes)
+The package includes three worked tutorials:
 
-data(clemens_sockeye)
+### Getting Started with spawnBayes
 
-fit <- fit_spawner(
-  clemens_sockeye,
-  assumed_residence = 15.5
-)
+Learn how to fit and interpret a single-population model using Artlish River
+Chinook salmon data.
 
-plot_run_curve(fit)
-```
+[Getting Started with spawnBayes](https://sire-p.github.io/spawnBayes/articles/getting-started.html)
 
-Estimate annual abundance:
+### Multi-Population Analyses in spawnBayes
 
-```r
-abundance(fit)
-```
+Fit multiple rivers jointly and share timing information among groups while
+estimating abundance separately for each population.
 
-Estimate run timing:
+[Multi-Population Analyses in spawnBayes](https://sire-p.github.io/spawnBayes/articles/multi-population.html)
 
-```r
-timing(fit)
-```
+### Importing NuSEDS Data into spawnBayes
 
-## Articles
+Learn how to export data from NuSEDS and import it directly into `spawnBayes`
+using `read_nuseds()`.
 
-### Single-Group Analysis
+[Importing NuSEDS Data into spawnBayes](https://sire-p.github.io/spawnBayes/articles/importing-nuseds.html)
 
-A complete introduction to fitting and interpreting spawnBayes models for a
-single group.
-
-### Multi-Group Analysis
-
-A worked example showing how timing information can be shared among streams,
-reaches, rivers, populations, or other assessment units while estimating
-group-specific abundance.
-
-### Working With NuSEDS Data
-
-A step-by-step workflow demonstrating how to import, process, and analyse
-NuSEDS survey exports using spawnBayes.
 
 ## Data Template
 
