@@ -128,14 +128,14 @@ survey coverage.
 ``` r
 fit <- fit_spawner(nvi_chinook, iter_warmup = 500, iter_sampling = 500, assumed_residence = 15.5, adapt_delta = 0.99, refresh = 0)
 #> Running MCMC with 4 parallel chains...
-#> Chain 1 finished in 281.7 seconds.
-#> Chain 2 finished in 294.4 seconds.
-#> Chain 3 finished in 364.8 seconds.
-#> Chain 4 finished in 392.9 seconds.
+#> Chain 1 finished in 278.5 seconds.
+#> Chain 2 finished in 288.3 seconds.
+#> Chain 3 finished in 356.8 seconds.
+#> Chain 4 finished in 381.0 seconds.
 #> 
 #> All 4 chains finished successfully.
-#> Mean chain execution time: 333.5 seconds.
-#> Total execution time: 393.3 seconds.
+#> Mean chain execution time: 326.2 seconds.
+#> Total execution time: 381.4 seconds.
 ```
 
 ## Model diagnostics

@@ -34,6 +34,12 @@ The
 function supports two levels of analysis: inspection-level and
 segment-level.
 
+If you are interested in setting up direct access to the query tool in
+R, please see
+<https://github.com/Pacific-salmon-assess/saaWeb/blob/main/R/runNuSedsExtractorQuery.r>
+and request a config file from the \[Salmon Data Unit\]
+(<DFO.SECUData-DonneesESUC.MPO@dfo-mpo.gc.ca>).
+
 ### Inspection-level analyses
 
 Inspection-level analyses use stream-level abundance estimates, where
